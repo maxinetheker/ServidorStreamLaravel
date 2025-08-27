@@ -1,0 +1,1 @@
+[14-Aug-2025 20:11:51 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\StreamingToolController::changeObsScene() in C:\inetpub\wwwstreamffpage\StreamFF\app\Http\Controllers\StreamingToolController.php on line 361
