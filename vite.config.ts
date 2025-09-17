@@ -23,10 +23,13 @@ export default defineConfig({
         },
     },
     server: {
-        host: '0.0.0.0',
+        // Use localhost for development; if you need LAN access keep '0.0.0.0'
+        host: 'localhost',
         port: 5173,
+        open: true,
         hmr: {
-            host: '192.168.101.63',
+            // When developing locally HMR should point to localhost
+            host: 'localhost',
         },
     },
 });
