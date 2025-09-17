@@ -123,6 +123,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('configuracion');
 
+    // Admin routes - panel and APIs (requires isadmin middleware)
+    Route::middleware(['isadmin'])->group(function () {
+        Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'index'])->name('admin.index');
+        // Server route to render the Inertia users page (prevents 404 on direct navigation)
+        Route::get('/admin/users', function () {
+            return Inertia::render('admin/users');
+        })->name('admin.users');
+        // Admin users API (simple endpoints)
+        Route::get('/api/admin/users', [\App\Http\Controllers\AdminUserController::class, 'index'])->name('api.admin.users.index');
+        Route::patch('/api/admin/users/{id}/toggle', [\App\Http\Controllers\AdminUserController::class, 'toggleActive'])->name('api.admin.users.toggle');
+        Route::patch('/api/admin/users/{id}/license', [\App\Http\Controllers\AdminUserController::class, 'activateLicense'])->name('api.admin.users.license');
+    Route::patch('/api/admin/users/{id}/license/toggle', [\App\Http\Controllers\AdminUserController::class, 'toggleLicense'])->name('api.admin.users.license.toggle');
+    Route::patch('/api/admin/users/{id}/license', [\App\Http\Controllers\AdminUserController::class, 'updateLicense'])->name('api.admin.users.license.update');
+    });
+
     // Rutas para el controlador de streaming tool
     Route::post('/streaming-tool/start-obs-stream', [StreamingToolController::class, 'startObsStream'])
         ->name('streaming-tool.start-obs-stream');
