@@ -17,6 +17,7 @@ class Licencia extends Model
         'retransmision',
         'controlremoto',
         'videosfallback',
+        'vencimiento', 
     ];
 
     protected $casts = [
@@ -24,13 +25,18 @@ class Licencia extends Model
         'retransmision' => 'boolean',
         'controlremoto' => 'boolean',
         'videosfallback' => 'boolean',
+        'vencimiento' => 'date',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withDefault([
             'active' => false,
-            'tipo' => 'free'
+            'tipo' => 'free',
+            'retransmision' => false,
+            'controlremoto' => false,
+            'videosfallback' => false,
+            'vencimiento' => null,
         ]);
     }
 }

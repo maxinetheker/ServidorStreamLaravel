@@ -15,6 +15,13 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * The relationships that should always be loaded.
+     *
+     * @var array
+     */
+    protected $with = ['licencia'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -49,6 +56,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'isadmin' => 'boolean',
             'active' => 'boolean',
+            'licencia' => 'array',
         ];
     }
 
@@ -71,7 +79,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(Licencia::class)->withDefault([
             'active' => false,
-            'tipo' => 'free'
+            'tipo' => 'free',
+            'retransmision' => false,
+            'controlremoto' => false,
+            'videosfallback' => false,
+            'vencimiento' => null,
         ]);
     }
 

@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // Cargar relaciones
-        $user->load(['videos', 'streamKey', 'obsConfiguration']);
+        $user->load(['videos', 'streamKey', 'obsConfiguration', 'licencia']);
 
         // Obtener estadísticas reales del usuario basadas en las tablas existentes
         $userStats = $this->getUserStats($user);
@@ -218,7 +218,7 @@ class DashboardController extends Controller
                 $response = Http::withOptions([
                     'verify' => false,
                     'timeout' => 10
-                ])->post(env('STREAMING_API_URL') . '/api/obs/status', [
+                ])->post('https://live.streamff.repo.net.pe/api/obs/status', [
                     'streamKey' => $streamKey->stream_key,
                     'action' => 'get_status'
                 ]);
@@ -251,7 +251,7 @@ class DashboardController extends Controller
                 $response = Http::withOptions([
                     'verify' => false,
                     'timeout' => 30
-                ])->post(env('STREAMING_API_URL') . '/api/stream/status', [
+                ])->post('https://live.streamff.repo.net.pe/api/stream/status', [
                     'id' => (string) $user->id,
                     'clave_local' => $streamKey->stream_key
                 ]);

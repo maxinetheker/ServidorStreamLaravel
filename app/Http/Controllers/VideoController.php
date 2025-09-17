@@ -15,6 +15,7 @@ class VideoController extends Controller
 {
     public function index()
     {
+
         $videos = Video::where('id_usuario', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
