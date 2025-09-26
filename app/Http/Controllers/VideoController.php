@@ -26,7 +26,6 @@ class VideoController extends Controller
     public function store(Request $request)
     {
         try {
-            // Log del archivo recibido para debugging
             $file = $request->file('video');
             if ($file) {
                 Log::info('Video file received', [
@@ -61,7 +60,6 @@ class VideoController extends Controller
             $filename = time().'_'.str_replace(' ', '_', $originalName);
             $mp4Filename = pathinfo($filename, PATHINFO_FILENAME).'.mp4';
 
-            // Guardar archivo temporal
             $tempPath = $file->store('temp', 'public');
             $fullTempPath = storage_path('app/public/' . $tempPath);
             $finalPath = "{$userDir}/{$mp4Filename}";
@@ -75,12 +73,10 @@ class VideoController extends Controller
             try {
                 $this->convertToMp4($fullTempPath, $fullFinalPath);
                 
-                // Eliminar archivo temporal
                 if (file_exists($fullTempPath)) {
                     unlink($fullTempPath);
                 }
 
-                // Crear registro en base de datos
                 $video = Video::create([
                     'id_usuario' => $userId,
                     'ruta' => str_replace('public/', '', $finalPath),
@@ -89,10 +85,8 @@ class VideoController extends Controller
                     'tamaño' => filesize($fullFinalPath)
                 ]);
 
-                // Detener stream activo si existe (porque cambió la lista de videos)
                 StreamController::stopStreamSilently(Auth::user());
 
-                // Obtener videos actualizados para retornar
                 $videos = Video::where('id_usuario', $userId)
                     ->orderBy('created_at', 'desc')
                     ->get();
@@ -132,7 +126,6 @@ class VideoController extends Controller
         }
 
         try {
-            // Configurar FFMpeg
             $ffmpeg = FFMpeg::create([
                 'ffmpeg.binaries'  => 'ffmpeg', // ruta del binario ffmpeg
                 'ffprobe.binaries' => 'ffprobe', // ruta del binario ffprobe
@@ -140,21 +133,17 @@ class VideoController extends Controller
                 'ffmpeg.threads'   => 12, // número de threads
             ]);
 
-            // Abrir el video de entrada
             $video = $ffmpeg->open($inputPath);
 
-            // Configurar el formato de salida
             $format = new X264();
             $format->setKiloBitrate(1000) // bitrate de video
                 ->setAudioCodec("aac")  // codec de audio
                 ->setAudioKiloBitrate(128); // bitrate de audio
 
-            // Eliminar archivo existente si existe
             if (file_exists($outputPath)) {
                 unlink($outputPath);
             }
 
-            // Convertir y guardar el video
             $video->save($format, $outputPath);
 
         } catch (\Exception $e) {
@@ -164,22 +153,18 @@ class VideoController extends Controller
 
     public function destroy(Video $video)
     {
-        // Verificar que el video pertenece al usuario autenticado
         if ($video->id_usuario !== Auth::id()) {
             return back()->withErrors(['error' => 'No autorizado']);
         }
 
         try {
-            // Eliminar el archivo físico
             $filePath = "public/{$video->ruta}";
             if (Storage::exists($filePath)) {
                 Storage::delete($filePath);
             }
 
-            // Eliminar el registro de la base de datos
             $video->delete();
 
-            // Detener stream activo si existe (porque cambió la lista de videos)
             StreamController::stopStreamSilently(Auth::user());
 
             return back()->with('success', 'Video eliminado correctamente');
@@ -189,34 +174,26 @@ class VideoController extends Controller
         }
     }
 
-    /**
-     * Clean orphaned video files from user's directory
-     * Removes physical files that are not registered in the database
-     */
+
     public static function cleanOrphanedVideos($userId)
     {
         try {
             $userVideoDir = "{$userId}/videos_de_corte";
             
-            // Check if user's video directory exists in storage/app/public
             if (!Storage::disk('public')->exists($userVideoDir)) {
                 return;
             }
 
-            // Get all video files in the user's directory
             $physicalFiles = Storage::disk('public')->files($userVideoDir);
             
-            // Get all video paths from database for this user
             $dbVideoPaths = Video::where('id_usuario', $userId)
                 ->pluck('ruta')
                 ->toArray();
 
-            // Find orphaned files (files that exist physically but not in database)
             $orphanedFiles = array_diff($physicalFiles, $dbVideoPaths);
             
             $deletedCount = 0;
             foreach ($orphanedFiles as $orphanedFile) {
-                // Only delete video files (not other files like .gitkeep, etc.)
                 $extension = strtolower(pathinfo($orphanedFile, PATHINFO_EXTENSION));
                 $videoExtensions = ['mp4', 'avi', 'mov', 'mkv', 'wmv', 'flv', 'webm'];
                 
