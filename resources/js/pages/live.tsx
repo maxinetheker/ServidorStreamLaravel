@@ -45,7 +45,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     // HLS reference
     const rtmpHlsRef = useRef<Hls | null>(null);
     
-    // ✅ NUEVO: Control de inicialización HLS para evitar parpadeo
+    // NUEVO: Control de inicialización HLS para evitar parpadeo
     const hlsInitializingRef = useRef<boolean>(false);
     const hlsReadyRef = useRef<boolean>(false);
 
@@ -68,11 +68,11 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     const [isWaitingForStream, setIsWaitingForStream] = useState<boolean>(false);
     const [waitingMessage, setWaitingMessage] = useState<string>('Esperando stream...');
 
-    // ✅ NUEVO: Estados para monitoreo RTMP
+    // NUEVO: Estados para monitoreo RTMP
     const [rtmpStatusMonitor, setRtmpStatusMonitor] = useState<string>('UNKNOWN');
     const [lastRtmpCheck, setLastRtmpCheck] = useState<Date | null>(null);
     
-    // ✅ NUEVO: Refs para control de monitoreo
+    // NUEVO: Refs para control de monitoreo
     const rtmpStatusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const isMonitoringRtmpRef = useRef<boolean>(false);
 
@@ -83,7 +83,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     const lastStallRecoveryRef = useRef<number>(0);
     const lastBufferLogRef = useRef<number>(0);
 
-    // ✅ NUEVO: Función para consultar estado RTMP
+    // NUEVO: Función para consultar estado RTMP
     const checkRtmpStatus = async () => {
         try {
             const response = await fetch(`${SOCKET_URL}/api/stream/rtmp-status/${STREAM_KEY}`, {
@@ -96,20 +96,20 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('📊 Estado RTMP consultado:', data);
+                console.log(' Estado RTMP consultado:', data);
                 
                 setLastRtmpCheck(new Date());
                 
                 if (data.rtmpActive) {
                     setRtmpStatusMonitor('ACTIVE');
                     if (!isRtmpAvailable) {
-                        console.log('🔄 RTMP detectado como activo, actualizando estado');
+                        console.log(' RTMP detectado como activo, actualizando estado');
                         handleRtmpStatusChange(true);
                     }
                 } else {
                     setRtmpStatusMonitor('INACTIVE');
                     if (isRtmpAvailable) {
-                        console.log('🔄 RTMP detectado como inactivo, actualizando estado');
+                        console.log(' RTMP detectado como inactivo, actualizando estado');
                         handleRtmpStatusChange(false);
                     }
                 }
@@ -117,20 +117,20 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 return data;
             }
         } catch (error) {
-            console.error('❌ Error consultando estado RTMP:', error);
+            console.error(' Error consultando estado RTMP:', error);
             setRtmpStatusMonitor('ERROR');
         }
         return null;
     };
 
-    // ✅ NUEVO: Iniciar monitoreo periódico de RTMP
+    // NUEVO: Iniciar monitoreo periódico de RTMP
     const startRtmpMonitoring = () => {
         if (isMonitoringRtmpRef.current) {
-            console.log('⚠️ Monitoreo RTMP ya está activo');
+            console.log(' Monitoreo RTMP ya está activo');
             return;
         }
 
-        console.log('🔍 Iniciando monitoreo periódico de estado RTMP');
+        console.log(' Iniciando monitoreo periódico de estado RTMP');
         isMonitoringRtmpRef.current = true;
 
         // Verificar inmediatamente
@@ -140,22 +140,22 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         rtmpStatusIntervalRef.current = setInterval(checkRtmpStatus, 10000);
     };
 
-    // ✅ NUEVO: Detener monitoreo RTMP
+    // NUEVO: Detener monitoreo RTMP
     const stopRtmpMonitoring = () => {
         if (rtmpStatusIntervalRef.current) {
             clearInterval(rtmpStatusIntervalRef.current);
             rtmpStatusIntervalRef.current = null;
         }
         isMonitoringRtmpRef.current = false;
-        console.log('🛑 Monitoreo RTMP detenido');
+        console.log(' Monitoreo RTMP detenido');
     };
 
     // ================== HLS CLEANUP HELPER ==================
     const cleanupHLS = () => {
-        console.log('🧹 Limpiando estado HLS completamente');
+    console.log('Limpiando estado HLS completamente');
         stopPlaybackHealthMonitor();
         
-        // ✅ NUEVO: Resetear flags de control
+    // NUEVO: Resetear flags de control
         hlsInitializingRef.current = false;
         hlsReadyRef.current = false;
 
@@ -163,7 +163,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             try {
                 rtmpHlsRef.current.destroy();
             } catch (e) {
-                console.log('⚠️ Error destruyendo HLS:', e);
+                console.log(' Error destruyendo HLS:', e);
             }
             rtmpHlsRef.current = null;
         }
@@ -226,18 +226,18 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             const hls = rtmpHlsRef.current as any;
 
             // Recovery strategies - MUY AGRESIVAS para ultra-baja latencia
-            const tooFarBehind = liveEdgeGap > 3; // ✅ ULTRA AGRESIVO: 15s -> 3s
-            const lowBuffer = bufferAhead < 0.5;   // ✅ MÁS TOLERANTE: 0.05 -> 0.5s
-            const stagnant = stagnantCounterRef.current >= 3; // ✅ MUY RÁPIDO: 8 -> 3 segundos
+            const tooFarBehind = liveEdgeGap > 3; //  ULTRA AGRESIVO: 15s -> 3s
+            const lowBuffer = bufferAhead < 0.5;   //  MÁS TOLERANTE: 0.05 -> 0.5s
+            const stagnant = stagnantCounterRef.current >= 3; //  MUY RÁPIDO: 8 -> 3 segundos
 
-            if ((tooFarBehind || (lowBuffer && !video.paused) || stagnant) && now - lastStallRecoveryRef.current > 2000) { // ✅ RECUPERACIÓN MÁS RÁPIDA: 8s -> 2s
+            if ((tooFarBehind || (lowBuffer && !video.paused) || stagnant) && now - lastStallRecoveryRef.current > 2000) { //  RECUPERACIÓN MÁS RÁPIDA: 8s -> 2s
                 lastStallRecoveryRef.current = now;
-                console.warn('⚠️ Playback degradation detected', { tooFarBehind, lowBuffer, stagnant, readyState });
+                console.warn(' Playback degradation detected', { tooFarBehind, lowBuffer, stagnant, readyState });
 
                 try {
-                    // ✅ ULTRA-AGRESIVO: Saltar al live edge más frecuentemente
+                    //  ULTRA-AGRESIVO: Saltar al live edge más frecuentemente
                     if (video.seekable && video.seekable.length > 0 && (tooFarBehind || stagnant)) {
-                        const edge = video.seekable.end(video.seekable.length - 1) - 0.2; // ✅ Más cerca del edge: 0.5s -> 0.2s
+                        const edge = video.seekable.end(video.seekable.length - 1) - 0.2; //  Más cerca del edge: 0.5s -> 0.2s
                         console.log('⚡ Jumping to live edge for ultra-low latency', edge);
                         video.currentTime = edge;
                     }
@@ -247,13 +247,13 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                         video.play().catch(() => { });
                     }
 
-                    // ✅ MÁS AGRESIVO: Restart load más frecuentemente
+                    //  MÁS AGRESIVO: Restart load más frecuentemente
                     if ((lowBuffer || stagnant) && hls && hls.startLoad) {
-                        console.log('🔄 Reiniciando carga HLS para ultra-baja latencia');
+                        console.log(' Reiniciando carga HLS para ultra-baja latencia');
                         hls.startLoad();
                     }
                 } catch (e) {
-                    console.log('❌ Error during ultra-low latency recovery', e);
+                    console.log(' Error during ultra-low latency recovery', e);
                 }
             }
         }, 1000); // check every second
@@ -266,16 +266,16 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         }
     };
 
-    // ✅ HLS.js ya está disponible como import directo - no necesita CDN
+    // HLS.js ya está disponible como import directo - no necesita CDN
     useEffect(() => {
-        console.log('✅ HLS.js cargado como módulo de Node.js:', Hls.isSupported());
+    console.log('HLS.js cargado como módulo de Node.js:', Hls.isSupported());
     }, []);
 
     // Initialize component
     useEffect(() => {
-        console.log('🚀 Inicializando viewer para:', STREAM_KEY);
+    console.log('Inicializando viewer para:', STREAM_KEY);
 
-        // ✅ NUEVO: Iniciar en estado de espera por defecto
+    // NUEVO: Iniciar en estado de espera por defecto
         setIsWaitingForStream(true);
         setWaitingMessage('Conectando al stream...');
 
@@ -283,27 +283,27 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         setupEventListeners();
         connectSocket();
         startHeartbeat();
-        startRtmpMonitoring(); // ✅ NUEVO: Iniciar monitoreo RTMP
+    startRtmpMonitoring(); // NUEVO: Iniciar monitoreo RTMP
 
-        // ✅ NUEVO: Verificación periódica de estado para evitar pantallas negras
+    // NUEVO: Verificación periódica de estado para evitar pantallas negras
         const stateCheckInterval = setInterval(() => {
             if (socketRef.current?.connected && isWaitingForStream) {
-                console.log('🔍 Verificación periódica de estado - Cliente esperando...');
+                console.log(' Verificación periódica de estado - Cliente esperando...');
                 socketRef.current.emit('force_state_check', { streamKey: STREAM_KEY });
             }
         }, 10000); // Cada 10 segundos
 
-        // ✅ MEJORADO: Mecanismo de respaldo más inteligente
+    // MEJORADO: Mecanismo de respaldo más inteligente
         const videoRequestInterval = setInterval(() => {
             if (socketRef.current?.connected) {
                 if (videosList.length === 0 && !isRtmpAvailable) {
-                    console.log('📁 Solicitando videos (sin videos locales y sin RTMP)');
+                    console.log(' Solicitando videos (sin videos locales y sin RTMP)');
                     socketRef.current.emit('request_videos_list', { streamKey: STREAM_KEY });
                 }
                 
-                // ✅ NUEVO: Forzar verificación si llevamos mucho tiempo esperando
+                //  NUEVO: Forzar verificación si llevamos mucho tiempo esperando
                 if (isWaitingForStream) {
-                    console.log('� Forzando verificación por tiempo de espera prolongado');
+                    console.log('Forzando verificación por tiempo de espera prolongado');
                     socketRef.current.emit('force_state_check', { streamKey: STREAM_KEY });
                 }
             }
@@ -312,7 +312,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         return () => {
             clearInterval(videoRequestInterval);
             clearInterval(stateCheckInterval);
-            stopRtmpMonitoring(); // ✅ NUEVO: Detener monitoreo RTMP
+            stopRtmpMonitoring(); // NUEVO: Detener monitoreo RTMP
             cleanup();
         };
     }, []);
@@ -336,7 +336,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     // Start local video when videos list changes
     useEffect(() => {
         if (videosList.length > 0) {
-            console.log('📁 Lista de videos actualizada, verificando si se debe iniciar reproducción');
+            console.log(' Lista de videos actualizada, verificando si se debe iniciar reproducción');
             
             // Solo iniciar video si no estamos mostrando RTMP y no hay video reproduciéndose
             if (!showingRtmp && !isWaitingForStream) {
@@ -348,23 +348,23 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                                  localVideo.ended;
                 
                 if (needsVideo) {
-                    console.log('🎬 No hay video reproduciéndose, iniciando videos locales');
+                    console.log(' No hay video reproduciéndose, iniciando videos locales');
                     startLocalVideo();
                 } else {
-                    console.log('✅ Ya hay video reproduciéndose, no interrumpiendo');
+                    console.log(' Ya hay video reproduciéndose, no interrumpiendo');
                 }
             } else if (showingRtmp) {
-                console.log('📡 RTMP activo, no iniciando videos locales');
+                console.log(' RTMP activo, no iniciando videos locales');
             } else if (isWaitingForStream) {
-                console.log('⏳ En pantalla de espera, no iniciando videos locales');
+                console.log(' En pantalla de espera, no iniciando videos locales');
             }
         } else {
-            console.log('⚠️ Lista de videos vacía');
+            console.log(' Lista de videos vacía');
         }
     }, [videosList, showingRtmp, isWaitingForStream]);
 
     const enableAutoAudio = () => {
-        console.log('🔊 Activando audio automáticamente para OBS');
+        console.log(' Activando audio automáticamente para OBS');
         setAudioEnabled(true);
         setUserHasInteracted(true);
 
@@ -376,7 +376,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 });
             }
         } catch (error) {
-            console.log('⚠️ No se pudo crear contexto de audio:', error);
+            console.log(' No se pudo crear contexto de audio:', error);
         }
     };
 
@@ -399,17 +399,17 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             console.log('🔌 Socket conectado');
             socketRef.current?.emit('join', STREAM_KEY);
             
-            // ✅ NUEVO: Solicitar lista de videos inmediatamente al conectar
+            //  NUEVO: Solicitar lista de videos inmediatamente al conectar
             setTimeout(() => {
                 if (videosList.length === 0) {
-                    console.log('📁 No hay videos cargados, solicitando lista al servidor');
+                    console.log(' No hay videos cargados, solicitando lista al servidor');
                     socketRef.current?.emit('request_videos_list', { streamKey: STREAM_KEY });
                 }
             }, 1000);
         });
 
         socketRef.current.on('connect_error', (error) => {
-            console.error('❌ Error de conexión Socket.IO:', error);
+            console.error(' Error de conexión Socket.IO:', error);
             setIsWaitingForStream(true);
             setWaitingMessage('Error de conexión, reintentando...');
         });
@@ -421,16 +421,16 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         });
 
         socketRef.current.on('reconnect', (attemptNumber) => {
-            console.log('🔄 Socket reconectado en intento:', attemptNumber);
+            console.log(' Socket reconectado en intento:', attemptNumber);
             socketRef.current?.emit('join', STREAM_KEY);
         });
 
         socketRef.current.on('reconnect_error', (error) => {
-            console.error('❌ Error de reconexión:', error);
+            console.error(' Error de reconexión:', error);
             setWaitingMessage('Error de reconexión...');
         });
 
-        // ✅ NUEVO: Escuchar cambios de estado RTMP
+    // NUEVO: Escuchar cambios de estado RTMP
         socketRef.current.on('rtmp_status_change', (data: { 
             streamKey: string;
             rtmpStatus: 'ACTIVE' | 'INACTIVE' | 'STOPPED';
@@ -441,25 +441,25 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             action: string;
             fallbackActive?: boolean;
         }) => {
-            console.log('📡 Cambio de estado RTMP recibido:', data);
+                console.log('Cambio de estado RTMP recibido:', data);
             
             if (data.streamKey === STREAM_KEY) {
                 setRtmpStatusMonitor(data.rtmpStatus);
                 
                 switch (data.rtmpStatus) {
                     case 'ACTIVE':
-                        console.log('✅ RTMP ACTIVO:', data.message);
+                        console.log('RTMP ACTIVO:', data.message);
                         setIsWaitingForStream(false);
                         handleRtmpStatusChange(true);
                         break;
                         
                     case 'INACTIVE':
-                        console.log('⚠️ RTMP INACTIVO:', data.message);
+                        console.log('RTMP INACTIVO:', data.message);
                         handleRtmpStatusChange(false);
                         break;
                         
                     case 'STOPPED':
-                        console.log('🛑 STREAM FINALIZADO:', data.message);
+                        console.log('STREAM FINALIZADO:', data.message);
                         setIsWaitingForStream(true);
                         setWaitingMessage('Stream finalizado');
                         handleRtmpStatusChange(false);
@@ -468,27 +468,27 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             }
         });
 
-        // ✅ NUEVO: Escuchar cuando el stream está activo
+    // NUEVO: Escuchar cuando el stream está activo
         socketRef.current.on('streamActive', (data: { 
             streamActive: boolean; 
             deviceConnected: boolean; 
             rtmpAvailable: boolean; 
             videosList: string[] 
         }) => {
-            console.log('🎬 Stream activo recibido:', data);
-            console.log('🔍 Estado previo:', { isWaitingForStream, showingRtmp, isRtmpAvailable });
+            console.log('Stream activo recibido:', data);
+            console.log('Estado previo:', { isWaitingForStream, showingRtmp, isRtmpAvailable });
             
             // El stream está activo, ocultar pantalla de espera y mostrar contenido
             setIsWaitingForStream(false);
-            console.log('✅ Pantalla de espera OCULTADA por streamActive');
+            console.log(' Pantalla de espera OCULTADA por streamActive');
             
             if (data.videosList && data.videosList.length > 0) {
                 setVideosList(data.videosList);
-                console.log('📁 Videos del stream activo:', data.videosList);
+                console.log('Videos del stream activo:', data.videosList);
                 
-                // ✅ NUEVO: Si no hay RTMP, iniciar videos locales inmediatamente
+                //  NUEVO: Si no hay RTMP, iniciar videos locales inmediatamente
                 if (!data.rtmpAvailable) {
-                    console.log('🎬 No hay RTMP activo, iniciando videos locales inmediatamente');
+                    console.log('No hay RTMP activo, iniciando videos locales inmediatamente');
                     setTimeout(() => {
                         const localVideo = localVideoRef.current;
                         if (!localVideo || localVideo.paused || !localVideo.src) {
@@ -505,14 +505,14 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         });
 
         socketRef.current.on('deviceStatusChange', (data: { rtmpAvailable: boolean; videosList: string[] }) => {
-            console.log('📱 Cambio de dispositivo RTMP:', data);
+            console.log('Cambio de dispositivo RTMP:', data);
             // Solo manejar cambios de RTMP, no de stream completo
             handleRtmpStatusChange(data.rtmpAvailable, data.videosList);
         });
 
         socketRef.current.on('disconnect', () => {
-            console.log('🔌 Socket desconectado - Mostrando pantalla de espera...');
-            // ✅ CAMBIO: Mostrar pantalla de espera en lugar de reload inmediato
+            console.log('Socket desconectado - Mostrando pantalla de espera...');
+            //  CAMBIO: Mostrar pantalla de espera en lugar de reload inmediato
             setIsWaitingForStream(true);
             setWaitingMessage('Conexión perdida, reintentando...');
             
@@ -524,10 +524,10 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             }, 10000); // 10 segundos
         });
 
-        // ✅ NUEVO: Escuchar eventos de clientes huérfanos
+    // NUEVO: Escuchar eventos de clientes huérfanos
         socketRef.current.on('waitingForStream', (data: { streamKey: string; message: string; status: string }) => {
-            console.log('⏳ Esperando stream recibido:', data);
-            console.log('🔍 Estado actual antes de waitingForStream:', { 
+            console.log('Esperando stream recibido:', data);
+            console.log('Estado actual antes de waitingForStream:', { 
                 isWaitingForStream, 
                 showingRtmp, 
                 isRtmpAvailable 
@@ -536,7 +536,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             setIsWaitingForStream(true);
             setWaitingMessage(data.message);
             
-            // ✅ NUEVO: Limpiar HLS y parar videos cuando volvemos a espera
+            // NUEVO: Limpiar HLS y parar videos cuando volvemos a espera
             cleanupHLS();
             setIsRtmpAvailable(false);
             setShowingRtmp(false);
@@ -545,39 +545,39 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             const localVideo = localVideoRef.current;
             if (localVideo) {
                 localVideo.pause();
-                console.log('⏸️ Video local pausado por waitingForStream');
+                console.log('Video local pausado por waitingForStream');
             }
             
-            // ✅ NUEVO: Solicitar videos mientras esperamos
+            //  NUEVO: Solicitar videos mientras esperamos
             setTimeout(() => {
                 if (socketRef.current?.connected) {
-                    console.log('📁 Solicitando videos mientras esperamos stream');
+                    console.log('Solicitando videos mientras esperamos stream');
                     socketRef.current.emit('request_videos_list', { streamKey: STREAM_KEY });
                 }
             }, 2000);
             
-            console.log('✅ Pantalla de espera activada por waitingForStream');
+            console.log('Pantalla de espera activada por waitingForStream');
         });
 
-        // ✅ NUEVO: Escuchar cuando el stream inicia
+    // NUEVO: Escuchar cuando el stream inicia
         socketRef.current.on('streamStarted', (data: { streamKey: string; message: string; action: string }) => {
-            console.log('🎉 Stream iniciado:', data);
-            // ✅ CAMBIO: No recargar automáticamente, dejar que streamActive maneje el estado
+            console.log('Stream iniciado:', data);
+            //  CAMBIO: No recargar automáticamente, dejar que streamActive maneje el estado
             setIsWaitingForStream(false);
             setWaitingMessage('Stream iniciado...');
         });
 
-        // ✅ NUEVO: Escuchar cuando el stream se detiene
+        // NUEVO: Escuchar cuando el stream se detiene
         socketRef.current.on('streamStopped', (data: { streamKey: string; message: string; action: string }) => {
-            console.log('🛑 Stream detenido recibido:', data);
-            console.log('🔍 Estado actual:', { 
+            console.log('Stream detenido recibido:', data);
+            console.log('Estado actual:', { 
                 isWaitingForStream, 
                 showingRtmp, 
                 isRtmpAvailable,
                 videoListLength: videosList.length 
             });
             
-            // ✅ MEJORADO: Mostrar pantalla de espera en lugar de recargar
+            // MEJORADO: Mostrar pantalla de espera en lugar de recargar
             setIsWaitingForStream(true);
             setWaitingMessage(data.message || 'Stream detenido, esperando reconexión...');
             
@@ -586,23 +586,23 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             setIsRtmpAvailable(false);
             setShowingRtmp(false);
             
-            // ✅ NUEVO: Pausar video local también
+            //  NUEVO: Pausar video local también
             const localVideo = localVideoRef.current;
             if (localVideo) {
                 localVideo.pause();
-                console.log('⏸️ Video local pausado por detención de stream');
+                console.log('Video local pausado por detención de stream');
             }
             
-            console.log('✅ Pantalla de espera activada por stream detenido');
+            console.log('Pantalla de espera activada por stream detenido');
         });
 
-        // ✅ NUEVO: Escuchar respuesta de lista de videos solicitada
+    // NUEVO: Escuchar respuesta de lista de videos solicitada
         socketRef.current.on('videos_list_response', (data: { streamKey: string; videosList: string[] }) => {
-            console.log('📁 Lista de videos recibida:', data);
+            console.log('Lista de videos recibida:', data);
             if (data.videosList && data.videosList.length > 0) {
                 setVideosList(data.videosList);
                 
-                // ✅ MEJORADO: Si no estamos mostrando RTMP y no hay video reproduciéndose, iniciar videos locales
+                //  MEJORADO: Si no estamos mostrando RTMP y no hay video reproduciéndose, iniciar videos locales
                 if (!showingRtmp && !isWaitingForStream) {
                     const localVideo = localVideoRef.current;
                     const needsToStartVideo = !localVideo || 
@@ -611,18 +611,18 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                                             localVideo.src === '';
                     
                     if (needsToStartVideo) {
-                        console.log('🎬 Iniciando videos locales con nueva lista recibida');
+                    console.log('Iniciando videos locales con nueva lista recibida');
                         setTimeout(() => startLocalVideo(), 500);
                     } else {
-                        console.log('✅ Ya hay un video reproduciéndose, no iniciando nuevo');
+                        console.log('Ya hay un video reproduciéndose, no iniciando nuevo');
                     }
                 }
             }
         });
 
-        // ✅ NUEVO: Manejar forzar reproducción local
+        // NUEVO: Manejar forzar reproducción local
         socketRef.current.on('forceLocalPlayback', (data: { streamKey: string; videosList: string[]; reason: string }) => {
-            console.log('🔄 Forzando reproducción local:', data);
+            console.log('Forzando reproducción local:', data);
             
             if (data.streamKey === STREAM_KEY && data.videosList && data.videosList.length > 0) {
                 setVideosList(data.videosList);
@@ -630,45 +630,45 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 setShowingRtmp(false);
                 setIsRtmpAvailable(false);
                 
-                console.log('🎬 Forzando inicio de videos locales por:', data.reason);
+                console.log('Forzando inicio de videos locales por:', data.reason);
                 setTimeout(() => {
                     startLocalVideo();
                 }, 100);
             }
         });
 
-        // ✅ NUEVO: Escuchar cuando el stream se inicia/reinicia
+    // NUEVO: Escuchar cuando el stream se inicia/reinicia
         socketRef.current.on('streamStarted', (data: { streamKey: string; message: string; action: string }) => {
-            console.log('🎉 Stream iniciado/reiniciado recibido:', data);
-            console.log('🔍 Estado actual antes de streamStarted:', { 
+            console.log('Stream iniciado/reiniciado recibido:', data);
+            console.log(' Estado actual antes de streamStarted:', { 
                 isWaitingForStream, 
                 showingRtmp, 
                 isRtmpAvailable 
             });
             
-            // ✅ IMPORTANTE: Solo ocultar pantalla de espera si corresponde al streamKey actual
+            //  IMPORTANTE: Solo ocultar pantalla de espera si corresponde al streamKey actual
             if (data.streamKey === STREAM_KEY) {
                 setIsWaitingForStream(false);
                 setWaitingMessage('Stream iniciado, conectando...');
                 
-                console.log('✅ Pantalla de espera desactivada por stream iniciado');
+                console.log('Pantalla de espera desactivada por stream iniciado');
                 
-                // ✅ NUEVO: Solicitar estado actual del stream
+                //  NUEVO: Solicitar estado actual del stream
                 setTimeout(() => {
                     if (socketRef.current?.connected) {
-                        console.log('📡 Solicitando estado actual del stream tras reinicio');
+                        console.log('Solicitando estado actual del stream tras reinicio');
                         socketRef.current.emit('join', STREAM_KEY);
                     }
                 }, 500);
             } else {
-                console.log('⚠️ streamStarted para streamKey diferente, ignorando');
+                console.log('streamStarted para streamKey diferente, ignorando');
             }
         });
 
-        // ✅ NUEVO: Debug - Exponer función de estado en window para debugging
+    // NUEVO: Debug - Exponer función de estado en window para debugging
         if (typeof window !== 'undefined') {
             (window as any).debugStreamState = () => {
-                console.log('🔍 ESTADO ACTUAL DEL STREAM:', {
+                console.log('ESTADO ACTUAL DEL STREAM:', {
                     isWaitingForStream,
                     showingRtmp,
                     isRtmpAvailable,
@@ -683,7 +683,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 const localVideo = localVideoRef.current;
                 const rtmpVideo = rtmpVideoRef.current;
                 
-                console.log('🎬 ESTADO DE VIDEOS:', {
+                console.log('ESTADO DE VIDEOS:', {
                     localVideo: {
                         exists: !!localVideo,
                         src: localVideo?.src || 'none',
@@ -705,7 +705,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             };
         }
 
-        // ========== OBS WEBSOCKET INTEGRATION ==========
+    // ========== OBS WEBSOCKET INTEGRATION ==========
         // Registrar este cliente como cliente OBS
         socketRef.current.emit('register_obs_client', {
             streamKey: STREAM_KEY,
@@ -717,12 +717,12 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
         // Escuchar confirmación de registro OBS
         socketRef.current.on('obs_client_registered', (data: { success: boolean; clientId: string; streamKey: string }) => {
-            console.log('📺 Cliente OBS registrado:', data);
+            console.log('Cliente OBS registrado:', data);
         });
 
         // Escuchar comandos OBS del servidor
         socketRef.current.on('obs_command', (data: any) => {
-            console.log('📨 Comando OBS recibido:', data);
+            console.log('Comando OBS recibido:', data);
             handleObsCommand(data);
         });
     };
@@ -752,7 +752,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 break;
 
             case 'connect_to_obs':
-                console.log(`🔗 Credenciales recibidas: ${data.credentials.address}`);
+                console.log(` Credenciales recibidas: ${data.credentials.address}`);
                 await connectToOBSWithCredentials(data.credentials.address, data.credentials.password);
                 break;
         }
@@ -772,7 +772,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             await obsWS.connect(`ws://${address}`, password);
 
             updateObsStatus('Conectado', 'connected');
-            console.log(`✅ Conectado a OBS: ${address}`);
+            console.log(` Conectado a OBS: ${address}`);
 
             setupObsEvents();
             await getInitialObsStatus();
@@ -786,7 +786,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
         } catch (error: any) {
             updateObsStatus('Error de conexión', 'error');
-            console.error(`❌ Error conectando a OBS: ${error.message}`);
+            console.error(` Error conectando a OBS: ${error.message}`);
 
             // Notificar al servidor del error
             sendObsStatusToServer({
@@ -802,7 +802,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         if (!obsWS) return;
 
         obsWS.on('StreamStateChanged', (data: any) => {
-            console.log(`🔴 Stream: ${data.outputState}`);
+            console.log(` Stream: ${data.outputState}`);
             const isStreaming = data.outputActive;
             setIsObsStreaming(isStreaming);
             sendObsStatusToServer({ 
@@ -821,7 +821,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         });
 
         obsWS.on('CurrentProgramSceneChanged', (data: any) => {
-            console.log(`🎬 Escena: ${data.sceneName}`);
+            console.log(` Escena: ${data.sceneName}`);
             setCurrentObsScene(data.sceneName);
             sendObsStatusToServer({ 
                 event: 'scene_changed', 
@@ -833,7 +833,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
     const updateObsStatus = (status: string, connectionStatus: string) => {
         setObsConnectionStatus(connectionStatus);
-        console.log(`📺 OBS Status: ${status} (${connectionStatus})`);
+        console.log(` OBS Status: ${status} (${connectionStatus})`);
     };
 
     const sendObsStatusToServer = (status: any) => {
@@ -852,13 +852,13 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 obsData: null
             };
             socketRef.current?.emit('obs_response', errorResponse);
-            console.log('❌ No conectado a OBS');
+            console.log(' No conectado a OBS');
             return;
         }
 
         try {
             const result = await obsWS.call(action, params);
-            console.log(`✅ Acción ejecutada: ${action}`);
+            console.log(` Acción ejecutada: ${action}`);
 
             const successResponse = {
                 requestId: requestId,
@@ -876,7 +876,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             }
 
         } catch (error: any) {
-            console.error(`❌ Error ejecutando ${action}: ${error.message}`);
+            console.error(` Error ejecutando ${action}: ${error.message}`);
 
             const errorResponse = {
                 requestId: requestId,
@@ -893,13 +893,13 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     // Ejecutar acción OBS simple
     const executeObsAction = async (action: string, params = {}) => {
         if (!obsWS) {
-            console.log('❌ No conectado a OBS');
+            console.log(' No conectado a OBS');
             return;
         }
 
         try {
             const result = await obsWS.call(action, params);
-            console.log(`✅ Acción ejecutada: ${action}`);
+            console.log(` Acción ejecutada: ${action}`);
 
             // Actualizar estado después de la acción
             if (action.includes('Stream') || action.includes('Record')) {
@@ -913,7 +913,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             });
 
         } catch (error: any) {
-            console.error(`❌ Error ejecutando ${action}: ${error.message}`);
+            console.error(` Error ejecutando ${action}: ${error.message}`);
         }
     };
 
@@ -944,7 +944,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             sendObsStatusToServer(status);
 
         } catch (error: any) {
-            console.error(`❌ Error obteniendo estado: ${error.message}`);
+            console.error(` Error obteniendo estado: ${error.message}`);
         }
     };
 
@@ -952,10 +952,10 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         await getInitialObsStatus();
     };
 
-    // ✅ NUEVO: Función crítica para manejar cambios en el estado RTMP
+    //  NUEVO: Función crítica para manejar cambios en el estado RTMP
     const handleRtmpStatusChange = (rtmpAvailable: boolean, videosList?: string[]) => {
-        console.log('📡 Manejando cambio de estado RTMP:', { rtmpAvailable, videosListLength: videosList?.length || 0 });
-        console.log('🔍 Estado antes del cambio:', { 
+        console.log(' Manejando cambio de estado RTMP:', { rtmpAvailable, videosListLength: videosList?.length || 0 });
+        console.log(' Estado antes del cambio:', { 
             isRtmpAvailable, 
             showingRtmp, 
             isWaitingForStream,
@@ -968,40 +968,40 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
         if (videosList && videosList.length > 0) {
             setVideosList(videosList);
-            console.log('📁 Videos actualizados:', videosList.length);
+            console.log(' Videos actualizados:', videosList.length);
         }
 
-        // ✅ IMPORTANTE: Solo proceder si NO estamos en pantalla de espera
+        //  IMPORTANTE: Solo proceder si NO estamos en pantalla de espera
         if (isWaitingForStream) {
-            console.log('⏳ En pantalla de espera, ignorando cambios RTMP hasta que stream esté activo');
+            console.log(' En pantalla de espera, ignorando cambios RTMP hasta que stream esté activo');
             return;
         }
 
         if (rtmpAvailable && !wasAvailable) {
-            console.log('📡 Dispositivo RTMP conectado - PREPARANDO CAMBIO DIRECTO');
-            console.log('🔇 FORZANDO MUTEO PERMANENTE de videos locales por nueva conexión RTMP');
+            console.log(' Dispositivo RTMP conectado - PREPARANDO CAMBIO DIRECTO');
+            console.log(' FORZANDO MUTEO PERMANENTE de videos locales por nueva conexión RTMP');
 
             forceLocalVideoMute();
             startForcedMuteMonitor();
 
             setRtmpStatus({ text: 'Conectando...', active: true });
 
-            // ✅ SIMPLIFICADO: Configurar HLS y cambiar directamente
+            //  SIMPLIFICADO: Configurar HLS y cambiar directamente
             if (Hls.isSupported()) {
-                console.log('🚀 Configurando stream RTMP inmediatamente');
+                console.log(' Configurando stream RTMP inmediatamente');
                 setupRtmpStream();
             }
 
         } else if (rtmpAvailable) {
-            console.log('📡 RTMP ya disponible - FORZANDO CAMBIO INMEDIATO');
+            console.log(' RTMP ya disponible - FORZANDO CAMBIO INMEDIATO');
             setRtmpStatus({ text: 'Conectado', active: true });
             forceLocalVideoMute();
             startForcedMuteMonitor();
-            console.log('🔇 Videos locales FORZOSAMENTE muteados - RTMP activo');
+            console.log(' Videos locales FORZOSAMENTE muteados - RTMP activo');
             
-            // ✅ CAMBIO DIRECTO sin esperar
+            //  CAMBIO DIRECTO sin esperar
             if (!showingRtmp) {
-                console.log('🔄 CAMBIANDO A RTMP INMEDIATAMENTE');
+                console.log(' CAMBIANDO A RTMP INMEDIATAMENTE');
                 setShowingRtmp(true);
                 
                 // Pausar video local inmediatamente
@@ -1017,18 +1017,18 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 }
                 
                 startPlaybackHealthMonitor();
-                console.log('✅ CAMBIO A RTMP COMPLETADO');
+                console.log(' CAMBIO A RTMP COMPLETADO');
             }
 
         } else {
-            // ✅ MEJORADO: Verificar realmente si HLS está disponible antes de desconectar
-            console.log('🔍 Verificando si RTMP realmente no está disponible...');
+            //  MEJORADO: Verificar realmente si HLS está disponible antes de desconectar
+            console.log(' Verificando si RTMP realmente no está disponible...');
             
             const streamUrl = `${HLS_BASE_URL}/hls/${STREAM_KEY}.m3u8`;
             fetch(streamUrl, { method: 'HEAD' })
                 .then(response => {
                     if (response.ok) {
-                        console.log('✅ HLS aún disponible, ignorando desconexión falsa');
+                        console.log(' HLS aún disponible, ignorando desconexión falsa');
                         // HLS aún está disponible, ignorar esta desconexión
                         setIsRtmpAvailable(true); // Revertir el cambio
                         setRtmpStatus({ text: 'Conectado (verificado)', active: true });
@@ -1038,20 +1038,20 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 })
                 .catch(() => {
                     // Dispositivo RTMP realmente desconectado - volver a videos locales
-                    console.log('🔊 Dispositivo RTMP realmente desconectado - volviendo a videos locales');
+                    console.log(' Dispositivo RTMP realmente desconectado - volviendo a videos locales');
                     cleanupHLS();
                     stopForcedMuteMonitor();
                     setRtmpStatus({ text: 'Desconectado', active: false });
                     
-                    // ✅ IMPORTANTE: Solo cambiar a videos locales si el stream sigue activo
+                    //  IMPORTANTE: Solo cambiar a videos locales si el stream sigue activo
                     if (!isWaitingForStream) {
                         setTimeout(() => {
-                            // ✅ NUEVO: Asegurar que hay videos disponibles antes de cambiar
+                            //  NUEVO: Asegurar que hay videos disponibles antes de cambiar
                             if (videosList && videosList.length > 0) {
-                                console.log('🎬 Cambiando a videos locales tras desconexión RTMP');
+                                console.log(' Cambiando a videos locales tras desconexión RTMP');
                                 switchToLocal();
                             } else {
-                                console.log('⚠️ No hay videos locales disponibles, solicitando al servidor');
+                                console.log(' No hay videos locales disponibles, solicitando al servidor');
                                 if (socketRef.current?.connected) {
                                     socketRef.current.emit('request_videos_list', { streamKey: STREAM_KEY });
                                 }
@@ -1067,26 +1067,26 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         if (localVideo) {
             localVideo.muted = true;
             localVideo.volume = 0;
-            console.log('🔇 MUTEO FORZADO aplicado a video local (muted=true, volume=0)');
+            console.log(' MUTEO FORZADO aplicado a video local (muted=true, volume=0)');
         }
     };
 
     const startForcedMuteMonitor = () => {
         stopForcedMuteMonitor();
 
-        console.log('🔍 Iniciando monitor de muteo forzado para videos locales');
+        console.log(' Iniciando monitor de muteo forzado para videos locales');
         forcedMuteIntervalRef.current = setInterval(() => {
             const localVideo = localVideoRef.current;
             const rtmpVideo = rtmpVideoRef.current;
 
             if (isRtmpAvailable && localVideo) {
                 if (!localVideo.muted || localVideo.volume > 0) {
-                    console.log('⚠️ DETECTADO: Video local intentó activar audio durante RTMP - FORZANDO MUTEO');
+                    console.log(' DETECTADO: Video local intentó activar audio durante RTMP - FORZANDO MUTEO');
                     forceLocalVideoMute();
                 }
 
                 if (showingRtmp && rtmpVideo && rtmpVideo.muted && audioEnabled) {
-                    console.log('🔊 Reactivando audio RTMP que fue muteado accidentalmente');
+                    console.log(' Reactivando audio RTMP que fue muteado accidentalmente');
                     rtmpVideo.muted = false;
                 }
             }
@@ -1097,7 +1097,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         if (forcedMuteIntervalRef.current) {
             clearInterval(forcedMuteIntervalRef.current);
             forcedMuteIntervalRef.current = null;
-            console.log('🛑 Monitor de muteo forzado detenido');
+            console.log(' Monitor de muteo forzado detenido');
         }
     };
 
@@ -1111,9 +1111,9 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         const checkHLS = async () => {
             try {
                 const hlsUrl = `${HLS_BASE_URL}/hls/${STREAM_KEY}.m3u8`;
-                console.log(`🔍 Verificando HLS: ${hlsUrl}`);
+                console.log(` Verificando HLS: ${hlsUrl}`);
                 
-                // ✅ CORREGIDO: Petición simplificada sin headers problemáticas
+                //  CORREGIDO: Petición simplificada sin headers problemáticas
                 const response = await fetch(hlsUrl, {
                     method: 'GET',
                     cache: 'no-store' // Usar cache standard en lugar de headers personalizadas
@@ -1125,11 +1125,11 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                     const hasValidPlaylist = content.includes('#EXTM3U');
                     const segmentCount = segmentMatches ? segmentMatches.length : 0;
                     
-                    console.log(`📊 HLS Check: Playlist válida: ${hasValidPlaylist}, Segmentos: ${segmentCount}`);
+                    console.log(` HLS Check: Playlist válida: ${hasValidPlaylist}, Segmentos: ${segmentCount}`);
                     
                     if (hasValidPlaylist && segmentCount >= 2) {
                         consecutiveSuccesses++;
-                        console.log(`✅ HLS válido (${consecutiveSuccesses}/2) con ${segmentCount} segmentos`);
+                        console.log(` HLS válido (${consecutiveSuccesses}/2) con ${segmentCount} segmentos`);
                         
                         if (consecutiveSuccesses >= 2) {
                             console.log(`🎉 HLS confirmado disponible con ${segmentCount} segmentos`);
@@ -1155,12 +1155,12 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             if (elapsed < maxWait) {
                 // Loguear cada 2 segundos
                 if (elapsed % 2000 === 0) {
-                    console.log(`⏳ Esperando HLS (${elapsed}ms): ${lastError}`);
+                    console.log(` Esperando HLS (${elapsed}ms): ${lastError}`);
                 }
                 setTimeout(checkHLS, checkInterval);
             } else {
-                console.warn(`⏰ Timeout esperando HLS después de ${elapsed}ms. Último error: ${lastError}`);
-                console.log('🔄 Continuando con callback de todas formas...');
+                console.warn(` Timeout esperando HLS después de ${elapsed}ms. Último error: ${lastError}`);
+                console.log(' Continuando con callback de todas formas...');
                 callback();
             }
         };
@@ -1172,24 +1172,24 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         const streamUrl = `${HLS_BASE_URL}/hls/${STREAM_KEY}.m3u8`;
         const rtmpVideo = rtmpVideoRef.current;
 
-        console.log('🎬 Configurando stream RTMP optimizado:', streamUrl);
-        console.log('📺 Elemento de video RTMP:', rtmpVideo ? 'Disponible' : 'No disponible');
+        console.log(' Configurando stream RTMP optimizado:', streamUrl);
+        console.log(' Elemento de video RTMP:', rtmpVideo ? 'Disponible' : 'No disponible');
         console.log('🔧 HLS.js:', Hls.isSupported() ? 'Soportado' : 'No soportado');
 
         if (!rtmpVideo || !Hls.isSupported()) {
-            console.error('❌ No se puede configurar RTMP: elementos faltantes');
+            console.error(' No se puede configurar RTMP: elementos faltantes');
             return;
         }
 
-        // ✅ NUEVO: Evitar inicialización múltiple simultánea
+        //  NUEVO: Evitar inicialización múltiple simultánea
         if (hlsInitializingRef.current) {
-            console.log('⚠️ HLS ya se está inicializando, esperando...');
+            console.log(' HLS ya se está inicializando, esperando...');
             return;
         }
 
-        // ✅ NUEVO: Si ya tenemos una instancia funcionando, no recrear
+        //  NUEVO: Si ya tenemos una instancia funcionando, no recrear
         if (rtmpHlsRef.current && hlsReadyRef.current) {
-            console.log('✅ HLS ya está configurado y funcionando');
+            console.log(' HLS ya está configurado y funcionando');
             return;
         }
 
@@ -1198,59 +1198,59 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
         // Limpiar instancia anterior solo si es necesario
         if (rtmpHlsRef.current) {
-            console.log('🧹 Limpiando instancia HLS anterior');
+            console.log(' Limpiando instancia HLS anterior');
             try {
                 rtmpHlsRef.current.destroy();
             } catch (error) {
-                console.warn('⚠️ Error limpiando HLS anterior:', error);
+                console.warn(' Error limpiando HLS anterior:', error);
             }
             rtmpHlsRef.current = null;
         }
 
-        // ✅ MEJORADO: Resetear video sin operaciones innecesarias
+        //  MEJORADO: Resetear video sin operaciones innecesarias
         if (rtmpVideo.src !== '') {
             rtmpVideo.removeAttribute('src');
             rtmpVideo.load();
         }
 
         if (Hls.isSupported()) {
-            console.log('🚀 Inicializando HLS.js con configuración optimizada');
+            console.log(' Inicializando HLS.js con configuración optimizada');
             
-            // ✅ OPTIMIZADO: Configuración ultra-baja latencia para NGINX HLS
+            //  OPTIMIZADO: Configuración ultra-baja latencia para NGINX HLS
             const hlsConfig = {
                 debug: false,
                 enableWorker: true,
                 lowLatencyMode: true,
-                backBufferLength: 10,          // ✅ Buffer menor: 90s -> 10s
-                maxBufferLength: 4,            // ✅ Buffer máximo menor: 30s -> 4s
-                maxMaxBufferLength: 8,         // ✅ Buffer absoluto menor: 60s -> 8s
+                backBufferLength: 10,          //  Buffer menor: 90s -> 10s
+                maxBufferLength: 4,            //  Buffer máximo menor: 30s -> 4s
+                maxMaxBufferLength: 8,         //  Buffer absoluto menor: 60s -> 8s
                 startLevel: -1,
                 capLevelToPlayerSize: true,
                 testBandwidth: false,
                 abrEwmaDefaultEstimate: 5000000,
-                manifestLoadingTimeOut: 5000,  // ✅ Timeout menor: 10s -> 5s
-                manifestLoadingMaxRetry: 2,    // ✅ Menos reintentos: 3 -> 2
-                manifestLoadingRetryDelay: 250, // ✅ Retry más rápido: 500ms -> 250ms
-                levelLoadingTimeOut: 5000,     // ✅ Timeout menor: 10s -> 5s
-                levelLoadingMaxRetry: 3,       // ✅ Menos reintentos: 4 -> 3
-                levelLoadingRetryDelay: 250,   // ✅ Retry más rápido: 500ms -> 250ms
-                fragLoadingTimeOut: 8000,      // ✅ Timeout menor: 20s -> 8s
-                fragLoadingMaxRetry: 4,        // ✅ Menos reintentos: 6 -> 4
-                fragLoadingRetryDelay: 250,    // ✅ Retry más rápido: 500ms -> 250ms
-                liveSyncDurationCount: 1,      // ✅ Ultra agresivo: 3 -> 1 (solo 1 fragmento de sync)
-                liveMaxLatencyDurationCount: 3, // ✅ Más agresivo: 10 -> 3
+                manifestLoadingTimeOut: 5000,  //  Timeout menor: 10s -> 5s
+                manifestLoadingMaxRetry: 2,    //  Menos reintentos: 3 -> 2
+                manifestLoadingRetryDelay: 250, //  Retry más rápido: 500ms -> 250ms
+                levelLoadingTimeOut: 5000,     //  Timeout menor: 10s -> 5s
+                levelLoadingMaxRetry: 3,       //  Menos reintentos: 4 -> 3
+                levelLoadingRetryDelay: 250,   //  Retry más rápido: 500ms -> 250ms
+                fragLoadingTimeOut: 8000,      //  Timeout menor: 20s -> 8s
+                fragLoadingMaxRetry: 4,        //  Menos reintentos: 6 -> 4
+                fragLoadingRetryDelay: 250,    //  Retry más rápido: 500ms -> 250ms
+                liveSyncDurationCount: 1,      //  Ultra agresivo: 3 -> 1 (solo 1 fragmento de sync)
+                liveMaxLatencyDurationCount: 3, //  Más agresivo: 10 -> 3
                 liveDurationInfinity: false,
-                maxLiveSyncPlaybackRate: 2.0,  // ✅ Recuperación más rápida: 1.5 -> 2.0
-                minAutoBitrate: 0,             // ✅ Permitir cualquier bitrate para velocidad
-                maxSeekHole: 2                 // ✅ Saltar agujeros pequeños rápidamente
+                maxLiveSyncPlaybackRate: 2.0,  //  Recuperación más rápida: 1.5 -> 2.0
+                minAutoBitrate: 0,             //  Permitir cualquier bitrate para velocidad
+                maxSeekHole: 2                 //  Saltar agujeros pequeños rápidamente
             };
             
             const hls = new Hls(hlsConfig);
             rtmpHlsRef.current = hls;
 
-            // ✅ MEJORADO: Event listeners optimizados
+            //  MEJORADO: Event listeners optimizados
             hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                console.log('📺 HLS media attached correctamente');
+                console.log(' HLS media attached correctamente');
             });
 
             hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
@@ -1261,16 +1261,16 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 // Intentar reproducir automáticamente
                 if (userHasInteracted && isRtmpAvailable) {
                     rtmpVideo.play().then(() => {
-                        console.log('▶️ HLS reproduciendo automáticamente');
+                        console.log(' HLS reproduciendo automáticamente');
                         startPlaybackHealthMonitor();
                     }).catch(error => {
-                        console.warn('⚠️ No se pudo reproducir automáticamente:', error);
+                        console.warn(' No se pudo reproducir automáticamente:', error);
                     });
                 }
             });
 
             hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-                console.log(`🔄 HLS cambió a nivel de calidad: ${data.level}`);
+                console.log(` HLS cambió a nivel de calidad: ${data.level}`);
             });
 
             hls.on(Hls.Events.FRAG_LOADED, () => {
@@ -1282,7 +1282,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             });
 
             hls.on(Hls.Events.ERROR, (event, data) => {
-                console.error('❌ Error HLS:', data.type, data.details);
+                console.error(' Error HLS:', data.type, data.details);
                 
                 if (data.fatal) {
                     hlsInitializingRef.current = false;
@@ -1290,11 +1290,11 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                     
                     switch (data.type) {
                         case Hls.ErrorTypes.NETWORK_ERROR:
-                            console.log('🔄 Error de red, intentando recuperar...');
+                            console.log(' Error de red, intentando recuperar...');
                             hls.startLoad();
                             break;
                         case Hls.ErrorTypes.MEDIA_ERROR:
-                            console.log('🔄 Error de media, intentando recuperar...');
+                            console.log(' Error de media, intentando recuperar...');
                             hls.recoverMediaError();
                             break;
                         default:
@@ -1314,12 +1314,12 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             hls.attachMedia(rtmpVideo);
 
         } else if (rtmpVideo.canPlayType('application/vnd.apple.mpegurl')) {
-            console.log('🍎 Usando reproducción HLS nativa (Safari)');
+            console.log(' Usando reproducción HLS nativa (Safari)');
             rtmpVideo.src = streamUrl;
             hlsInitializingRef.current = false;
             hlsReadyRef.current = true;
         } else {
-            console.error('❌ HLS no soportado en este navegador');
+            console.error(' HLS no soportado en este navegador');
             hlsInitializingRef.current = false;
         }
     };
@@ -1327,41 +1327,41 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
     const startLocalVideo = () => {
         if (videosList.length === 0) {
-            console.log('⚠️ No hay videos disponibles para startLocalVideo');
-            // ✅ NUEVO: Solicitar videos si no hay ninguno
+            console.log(' No hay videos disponibles para startLocalVideo');
+            //  NUEVO: Solicitar videos si no hay ninguno
             if (socketRef.current && socketRef.current.connected) {
-                console.log('📁 Solicitando lista de videos al servidor');
+                console.log(' Solicitando lista de videos al servidor');
                 socketRef.current.emit('request_videos_list', { streamKey: STREAM_KEY });
             }
             return;
         }
 
-        // ✅ NUEVO: Verificar si ya hay un video reproduciéndose antes de cambiar
+        //  NUEVO: Verificar si ya hay un video reproduciéndose antes de cambiar
         const localVideo = localVideoRef.current;
         if (localVideo && !localVideo.paused && localVideo.src && !localVideo.ended && localVideo.src !== '') {
-            console.log('✅ Ya hay un video reproduciéndose, verificando si es válido...');
+            console.log(' Ya hay un video reproduciéndose, verificando si es válido...');
             
             // Verificar si el src actual está en la lista de videos válidos
             const currentUrl = localVideo.src;
             const isValidVideo = videosList.some(video => currentUrl.includes(video) || video.includes(currentUrl.split('/').pop() || ''));
             
             if (isValidVideo) {
-                console.log('✅ Video actual es válido, no interrumpiendo');
+                console.log(' Video actual es válido, no interrumpiendo');
                 return;
             } else {
-                console.log('⚠️ Video actual no es válido, cambiando a uno nuevo');
+                console.log(' Video actual no es válido, cambiando a uno nuevo');
             }
         }
 
-        // ✅ NUEVO: Asegurar que no estamos en estado de espera
+        //  NUEVO: Asegurar que no estamos en estado de espera
         if (isWaitingForStream) {
-            console.log('⚠️ Aún en estado de espera, no iniciando video local');
+            console.log(' Aún en estado de espera, no iniciando video local');
             return;
         }
 
         const randomIndex = Math.floor(Math.random() * videosList.length);
         loadLocalVideo(randomIndex);
-        console.log('🎬 Rotación automática por tiempo DESHABILITADA - videos cambiarán solo al terminar');
+        console.log(' Rotación automática por tiempo DESHABILITADA - videos cambiarán solo al terminar');
     };
 
     const loadLocalVideo = (index: number) => {
@@ -1376,7 +1376,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
         if (!localVideo) return;
 
-        console.log('🎲 Reproduciendo video aleatorio [' + (index + 1) + '/' + videosList.length + ']:', videoName);
+        console.log(' Reproduciendo video aleatorio [' + (index + 1) + '/' + videosList.length + ']:', videoName);
 
         localVideo.src = videoUrl;
         localVideo.load();
@@ -1384,7 +1384,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         if (isRtmpAvailable) {
             localVideo.muted = true;
             localVideo.volume = 0;
-            console.log('🔇 Video local cargado con MUTEO FORZADO (RTMP activo)');
+            console.log(' Video local cargado con MUTEO FORZADO (RTMP activo)');
         } else if (userHasInteracted) {
             localVideo.muted = false;
             localVideo.volume = 1;
@@ -1396,7 +1396,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         localVideo.play().then(() => {
             if (!showingRtmp && audioEnabled && userHasInteracted) {
                 localVideo.muted = false;
-                console.log('🔊 Audio local activado automáticamente');
+                console.log(' Audio local activado automáticamente');
             }
         }).catch(error => {
             console.error('Error al reproducir video:', error);
@@ -1421,13 +1421,13 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 nextIndex = Math.floor(Math.random() * videosList.length);
             } while (nextIndex === currentVideoIndex);
         }
-        console.log('🔄 Rotando a nuevo video aleatorio desde índice', currentVideoIndex, 'a', nextIndex);
+        console.log(' Rotando a nuevo video aleatorio desde índice', currentVideoIndex, 'a', nextIndex);
         loadLocalVideo(nextIndex);
     };
 
     const switchToRtmp = () => {
-        console.log('🔄 switchToRtmp llamado - verificando condiciones...');
-        console.log('📊 Estado actual:', {
+        console.log(' switchToRtmp llamado - verificando condiciones...');
+        console.log(' Estado actual:', {
             isRtmpAvailable,
             showingRtmp,
             hasHlsInstance: !!rtmpHlsRef.current,
@@ -1436,19 +1436,19 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         });
 
         if (!isRtmpAvailable) {
-            console.warn('⚠️ switchToRtmp llamado pero isRtmpAvailable es false');
+            console.warn(' switchToRtmp llamado pero isRtmpAvailable es false');
             return;
         }
         
-        // ✅ MEJORADO: Avoid redundant switches causing flicker
+        //  MEJORADO: Avoid redundant switches causing flicker
         if (showingRtmp && hlsReadyRef.current) {
-            console.log('✅ Ya mostrando RTMP con HLS listo, verificando estado del video...');
+            console.log(' Ya mostrando RTMP con HLS listo, verificando estado del video...');
             
             const rtmpVideo = rtmpVideoRef.current;
             if (rtmpVideo && rtmpVideo.paused) {
-                console.log('🔄 Video RTMP pausado, reactivando...');
+                console.log(' Video RTMP pausado, reactivando...');
                 rtmpVideo.play().catch(error => {
-                    console.error('❌ Error reactivando video RTMP:', error);
+                    console.error(' Error reactivando video RTMP:', error);
                 });
             }
             
@@ -1459,7 +1459,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             return;
         }
 
-        console.log('🔄 Cambiando a RTMP');
+        console.log(' Cambiando a RTMP');
         setShowingRtmp(true);
 
         const rtmpVideo = rtmpVideoRef.current;
@@ -1475,20 +1475,20 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             setAudioEnabled(true);
         }
 
-        // ✅ MEJORADO: Manejar reproducción del video más eficientemente
+        //  MEJORADO: Manejar reproducción del video más eficientemente
         if (rtmpVideo) {
-            console.log('📺 Configurando video RTMP para reproducción...');
+            console.log(' Configurando video RTMP para reproducción...');
             
-            // ✅ NUEVO: Verificar que tenemos HLS listo antes de proceder
+            //  NUEVO: Verificar que tenemos HLS listo antes de proceder
             if (!hlsReadyRef.current) {
-                console.warn('⚠️ HLS no está listo, configurando...');
+                console.warn(' HLS no está listo, configurando...');
                 setupRtmpStream();
                 
-                // ✅ MEJORADO: Esperar a que HLS esté listo antes de reproducir
+                //  MEJORADO: Esperar a que HLS esté listo antes de reproducir
                 const checkHlsReady = () => {
                     if (hlsReadyRef.current && rtmpVideo.paused) {
                         rtmpVideo.play().catch(error => {
-                            console.error('❌ Error reproduciendo después de HLS ready:', error);
+                            console.error(' Error reproduciendo después de HLS ready:', error);
                         });
                     } else if (!hlsReadyRef.current) {
                         setTimeout(checkHlsReady, 200);
@@ -1499,51 +1499,51 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             } else {
                 // Ya tenemos HLS listo, solo reproducir si es necesario
                 if (rtmpVideo.paused) {
-                    console.log('🎬 Reproduciendo video RTMP...');
+                    console.log(' Reproduciendo video RTMP...');
                     rtmpVideo.play().catch(error => {
-                        console.error('❌ Error reproduciendo video RTMP:', error);
+                        console.error(' Error reproduciendo video RTMP:', error);
                     });
                 }
             }
 
-            // ✅ NUEVO: RTMP siempre con audio activo
+            //  NUEVO: RTMP siempre con audio activo
             rtmpVideo.muted = false;
             rtmpVideo.volume = 1;
-            console.log('🔊 Audio RTMP SIEMPRE activo (muted=false, volume=1)');
+            console.log(' Audio RTMP SIEMPRE activo (muted=false, volume=1)');
         }
 
-        console.log('🔊 Audio RTMP: configurado automáticamente');
-        console.log('🔇 Audio local: FORZOSAMENTE MUTEADO por conexión RTMP activa');
+        console.log(' Audio RTMP: configurado automáticamente');
+        console.log(' Audio local: FORZOSAMENTE MUTEADO por conexión RTMP activa');
         startPlaybackHealthMonitor();
     };
 
     const switchToLocal = () => {
-        console.log('🔄 Cambiando a videos locales');
+        console.log(' Cambiando a videos locales');
         setShowingRtmp(false);
         stopPlaybackHealthMonitor();
 
         const rtmpVideo = rtmpVideoRef.current;
         const localVideo = localVideoRef.current;
 
-        // ✅ CAMBIO: Restaurar audio local cuando no hay RTMP pero el stream sigue activo
+        //  CAMBIO: Restaurar audio local cuando no hay RTMP pero el stream sigue activo
         if (audioEnabled && userHasInteracted && localVideo) {
             localVideo.muted = false;
             localVideo.volume = 1;
-            console.log('🔊 Audio local: reactivado tras desconexión RTMP (muted=false, volume=1)');
+            console.log(' Audio local: reactivado tras desconexión RTMP (muted=false, volume=1)');
         } else if (localVideo) {
             localVideo.muted = true;
             localVideo.volume = 0;
-            console.log('🔇 Audio local: mantenido muteado por configuración');
+            console.log(' Audio local: mantenido muteado por configuración');
         }
 
-        // ✅ NUEVO: RTMP nunca se mutea, mantener audio activo
+        //  NUEVO: RTMP nunca se mutea, mantener audio activo
         if (rtmpVideo) {
             rtmpVideo.muted = false;
             rtmpVideo.volume = 1;
-            console.log('🔊 Audio RTMP mantenido activo incluso en modo local');
+            console.log(' Audio RTMP mantenido activo incluso en modo local');
         }
 
-        // ✅ MEJORADO: Asegurar que los videos locales se reproduzcan correctamente
+        //  MEJORADO: Asegurar que los videos locales se reproduzcan correctamente
         if (videosList.length > 0) {
             // Si no hay video cargado o está vacío, cargar uno nuevo
             if (!localVideo || !localVideo.src || localVideo.src === '') {
@@ -1552,18 +1552,18 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             } else {
                 // Si hay video pero está pausado, reproducirlo
                 if (localVideo.paused) {
-                    console.log('▶️ Reanudando video local pausado');
+                    console.log(' Reanudando video local pausado');
                     localVideo.play().catch(error => {
                         console.error('Error al reproducir video local pausado, cargando nuevo video:', error);
                         // Si falla la reproducción, cargar un video diferente
                         rotateLocalVideo();
                     });
                 } else {
-                    console.log('✅ Video local ya se está reproduciendo');
+                    console.log(' Video local ya se está reproduciendo');
                 }
             }
         } else {
-            console.warn('⚠️ No hay videos disponibles para reproducir');
+            console.warn(' No hay videos disponibles para reproducir');
         }
     };
 
@@ -1575,27 +1575,27 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         const localVideo = localVideoRef.current;
 
         if (showingRtmp && rtmpVideo) {
-            // ✅ NUEVO: RTMP nunca se mutea, siempre activo
+            //  NUEVO: RTMP nunca se mutea, siempre activo
             rtmpVideo.muted = false;
             rtmpVideo.volume = 1;
             forceLocalVideoMute();
-            console.log('🔊 Audio RTMP: SIEMPRE activo (nunca se mutea)');
-            console.log('🔇 Audio local: FORZOSAMENTE muteado por conexión RTMP activa');
+            console.log(' Audio RTMP: SIEMPRE activo (nunca se mutea)');
+            console.log(' Audio local: FORZOSAMENTE muteado por conexión RTMP activa');
         } else if (localVideo) {
             localVideo.muted = !newAudioEnabled;
             localVideo.volume = newAudioEnabled ? 1 : 0;
-            // ✅ NUEVO: RTMP nunca se mutea
+            //  NUEVO: RTMP nunca se mutea
             if (rtmpVideo) {
                 rtmpVideo.muted = false;
                 rtmpVideo.volume = 1;
             }
-            console.log(`🔊 Audio local: ${newAudioEnabled ? 'activado' : 'desactivado'}`);
+            console.log(` Audio local: ${newAudioEnabled ? 'activado' : 'desactivado'}`);
         }
 
         console.log(`🎵 Audio general: ${newAudioEnabled ? 'ON' : 'OFF'}`);
 
         if (showingRtmp || isRtmpAvailable) {
-            console.log('📡 POLÍTICA ACTIVA: Videos locales permanecen FORZOSAMENTE muteados mientras hay conexión RTMP');
+            console.log(' POLÍTICA ACTIVA: Videos locales permanecen FORZOSAMENTE muteados mientras hay conexión RTMP');
         }
 
         if (newAudioEnabled) {
@@ -1614,7 +1614,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     };
 
     const cleanup = () => {
-        console.log('🧹 Cleanup general del componente');
+        console.log(' Cleanup general del componente');
 
         if (socketRef.current) {
             socketRef.current.disconnect();
@@ -1630,7 +1630,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     };    // Event handlers for video elements
     // Event handlers for video elements
     const handleRtmpCanPlay = () => {
-        console.log('📺 RTMP Video can play - estado:', {
+        console.log(' RTMP Video can play - estado:', {
             isRtmpAvailable,
             showingRtmp,
             paused: rtmpVideoRef.current?.paused,
@@ -1638,9 +1638,9 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             currentTime: rtmpVideoRef.current?.currentTime
         });
         
-        // ✅ CORREGIDO: Cambio inmediato y directo cuando RTMP puede reproducir
+        //  CORREGIDO: Cambio inmediato y directo cuando RTMP puede reproducir
         if (isRtmpAvailable && !showingRtmp) {
-            console.log('🔄 RTMP puede reproducir - CAMBIANDO INMEDIATAMENTE');
+            console.log(' RTMP puede reproducir - CAMBIANDO INMEDIATAMENTE');
             setShowingRtmp(true);
             
             // Pausar video local inmediatamente
@@ -1653,34 +1653,34 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             
             const rtmpVideo = rtmpVideoRef.current;
             if (rtmpVideo) {
-                // ✅ NUEVO: RTMP siempre con audio activo
+                //  NUEVO: RTMP siempre con audio activo
                 rtmpVideo.muted = false;
                 rtmpVideo.volume = 1;
-                console.log('🔊 Audio RTMP SIEMPRE activo (muted=false, volume=1)');
+                console.log(' Audio RTMP SIEMPRE activo (muted=false, volume=1)');
                 
                 if (rtmpVideo.paused) {
                     rtmpVideo.play().catch(error => {
-                        console.error('❌ Error reproduciendo RTMP en canPlay:', error);
+                        console.error(' Error reproduciendo RTMP en canPlay:', error);
                     });
                 }
             }
             
             startPlaybackHealthMonitor();
-            console.log('✅ CAMBIO A RTMP COMPLETADO');
+            console.log(' CAMBIO A RTMP COMPLETADO');
             
         } else if (isRtmpAvailable && showingRtmp) {
-            console.log('✅ Ya mostrando RTMP, verificando reproducción y audio');
+            console.log(' Ya mostrando RTMP, verificando reproducción y audio');
             const rtmpVideo = rtmpVideoRef.current;
             if (rtmpVideo) {
-                // ✅ NUEVO: RTMP siempre con audio activo
+                //  NUEVO: RTMP siempre con audio activo
                 rtmpVideo.muted = false;
                 rtmpVideo.volume = 1;
-                console.log('🔊 Audio RTMP mantenido activo');
+                console.log(' Audio RTMP mantenido activo');
                 
                 if (rtmpVideo.paused) {
-                    console.log('🔄 Video pausado, reactivando');
+                    console.log(' Video pausado, reactivando');
                     rtmpVideo.play().catch(error => {
-                        console.error('❌ Error reactivando desde canplay:', error);
+                        console.error(' Error reactivando desde canplay:', error);
                     });
                 }
             }
@@ -1688,7 +1688,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     };
 
     const handleLocalEnded = () => {
-        console.log('🎬 Video terminado, cambiando a uno aleatorio');
+        console.log(' Video terminado, cambiando a uno aleatorio');
         rotateLocalVideo();
     };
 
@@ -1697,20 +1697,20 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
         const error = videoEl?.error;
         console.error('Error en video local:', error);
         const errorCode = error ? error.code : 'unknown';
-        console.log('🔍 Código de error:', errorCode);
+        console.log(' Código de error:', errorCode);
 
         if (errorCode === 3 || errorCode === 4) {
-            console.log('❌ Error crítico, cambiando video en 3 segundos...');
+            console.log(' Error crítico, cambiando video en 3 segundos...');
             setTimeout(() => {
                 rotateLocalVideo();
             }, 3000);
         } else {
-            console.log('⚠️ Error menor, intentando continuar reproducción...');
+            console.log(' Error menor, intentando continuar reproducción...');
             setTimeout(() => {
                 const localVideo = localVideoRef.current;
                 if (localVideo && localVideo.paused && !showingRtmp) {
                     localVideo.play().catch(() => {
-                        console.log('🔄 No se pudo reanudar, cambiando video...');
+                        console.log(' No se pudo reanudar, cambiando video...');
                         rotateLocalVideo();
                     });
                 }
@@ -1721,14 +1721,14 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     const handleLocalLoadedData = () => {
         if (isRtmpAvailable) {
             forceLocalVideoMute();
-            console.log('🔇 Muteo forzado aplicado al cargar datos (RTMP activo)');
+            console.log(' Muteo forzado aplicado al cargar datos (RTMP activo)');
         }
 
         const localVideo = localVideoRef.current;
         if (localVideo && !showingRtmp) {
-            // ✅ MEJORADO: Verificar si el video está pausado antes de intentar reproducir
+            //  MEJORADO: Verificar si el video está pausado antes de intentar reproducir
             if (localVideo.paused) {
-                console.log('▶️ Video local cargado y pausado, iniciando reproducción');
+                console.log(' Video local cargado y pausado, iniciando reproducción');
                 localVideo.play().catch(error => {
                     console.error('Error al reproducir video después de cargar:', error);
                     // Si falla la reproducción, intentar con otro video
@@ -1737,7 +1737,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                     }, 1000);
                 });
             } else {
-                console.log('✅ Video local cargado y ya se está reproduciendo');
+                console.log(' Video local cargado y ya se está reproduciendo');
             }
         }
     };
@@ -1745,14 +1745,14 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     const handleLocalVolumeChange = () => {
         const localVideo = localVideoRef.current;
         if (isRtmpAvailable && localVideo && (!localVideo.muted || localVideo.volume > 0)) {
-            console.log('⚠️ DETECTADO: Cambio de volumen en video local durante RTMP - FORZANDO MUTEO');
+            console.log(' DETECTADO: Cambio de volumen en video local durante RTMP - FORZANDO MUTEO');
             forceLocalVideoMute();
         }
     };
 
     return (
         <div className="relative w-screen h-screen bg-black text-white bg-back overflow-hidden">
-            {/* ✅ NUEVO: Pantalla de espera */}
+            {/*  NUEVO: Pantalla de espera */}
             {isWaitingForStream && (
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col justify-center items-center z-50">
                     <div className="text-4xl font-light mb-8 text-center text-white">
@@ -1776,7 +1776,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                 </div>
             )}
 
-            {/* ✅ NUEVO: Indicador de estado RTMP */}
+            {/*  NUEVO: Indicador de estado RTMP */}
             <div className="fixed top-4 right-4 z-40">
                 <div className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     rtmpStatusMonitor === 'ACTIVE' 
@@ -1815,14 +1815,14 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
                     autoPlay
                     playsInline
                     onCanPlay={handleRtmpCanPlay}
-                    onPlay={() => console.log('📺 RTMP Video started playing')}
+                    onPlay={() => console.log(' RTMP Video started playing')}
                     onPause={() => console.log('⏸️ RTMP Video paused')}
-                    onWaiting={() => console.log('⏳ RTMP Video waiting for data')}
+                    onWaiting={() => console.log(' RTMP Video waiting for data')}
                     onLoadStart={() => console.log('📥 RTMP Video load started')}
-                    onLoadedData={() => console.log('✅ RTMP Video data loaded')}
+                    onLoadedData={() => console.log(' RTMP Video data loaded')}
                     onError={(e) => {
                         const video = e.target as HTMLVideoElement;
-                        console.error('❌ RTMP Video error:', video.error);
+                        console.error(' RTMP Video error:', video.error);
                     }}
                 />
 
@@ -1872,14 +1872,14 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
             onClick={toggleAudio}
             className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
           >
-            🔊 Audio
+             Audio
           </button>
           
           <button
             onClick={switchVideo}
             className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-2"
           >
-            🔄 Cambiar
+             Cambiar
           </button>
         </div> */}
             </div>
