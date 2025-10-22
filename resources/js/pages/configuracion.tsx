@@ -276,7 +276,8 @@ export default function Configuracion() {
                                                 <div className="flex gap-2 mt-1">
                                                     <Input
                                                         type="text"
-                                                        value={`https://streamff.repo.net.pe/live?key=${streamKey}`}
+                                                        value={`http://localhost:8000/live?key=${streamKey}`}
+                                                       // value={`https://streamff.repo.net.pe/live?key=${streamKey}`}
                                                         readOnly
                                                         className="font-mono text-xs bg-white dark:bg-gray-900"
                                                     />

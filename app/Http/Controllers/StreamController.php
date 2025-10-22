@@ -14,7 +14,7 @@ class StreamController extends Controller
     /**
      * Get the current stream status
      */
-    public function getStatus(): JsonResponse
+    public function ObtenerStatus(): JsonResponse
     {
         $user = Auth::user();
         $streamKey = $user->streamKey;
@@ -53,23 +53,23 @@ class StreamController extends Controller
     /**
      * Start the stream
      */
-    public function start(Request $request)
+    public function IniciarRetransmision(Request $request)
     {
         Log::info('Stream start request received', ['user_id' => Auth::id()]);
-        
+
         $user = Auth::user();
         $streamKey = $user->streamKey;
 
         if (!$streamKey) {
             Log::error('No stream key found for user', ['user_id' => $user->id]);
-            
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No stream key found'
                 ], 400);
             }
-            
+
             return back()->withErrors(['error' => 'No stream key found']);
         }
 
@@ -78,12 +78,12 @@ class StreamController extends Controller
             ->get()
             ->map(function ($video) {
                 // Convert from storage path to full storage path
-                // From: "1/videos_de_corte/filename.mp4" 
+                // From: "1/videos_de_corte/filename.mp4"
                 // To: "storage/1/videos_de_corte/filename.mp4"
                 return "storage/" . $video->ruta;
             })
             ->toArray();
-        
+
         Log::info('Starting stream', [
             'user_id' => $user->id,
             'videos_count' => count($videos),
@@ -103,17 +103,17 @@ class StreamController extends Controller
             ]);
 
             $prepareData = $response->json();
-            
+
             if (!$prepareData['ok']) {
                 Log::warning('Stream preparation failed', ['response' => $prepareData]);
-                
+
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
                         'message' => $prepareData['message'] ?? 'Failed to prepare stream'
                     ]);
                 }
-                
+
                 return back()->withErrors(['error' => $prepareData['message'] ?? 'Failed to prepare stream']);
             }
 
@@ -129,7 +129,7 @@ class StreamController extends Controller
             ]);
 
             $data = $response->json();
-            
+
             Log::info('Stream API response', [
                 'status_code' => $response->status(),
                 'response_data' => $data
@@ -143,18 +143,18 @@ class StreamController extends Controller
                         'streamKey' => $streamKey->stream_key
                     ]);
                 }
-                
+
                 return back()->with('success', $data['message']);
             } else {
                 Log::warning('Stream start failed', ['response' => $data]);
-                
+
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
                         'message' => $data['message'] ?? 'Failed to start stream'
                     ]);
                 }
-                
+
                 return back()->withErrors(['error' => $data['message'] ?? 'Failed to start stream']);
             }
 
@@ -164,14 +164,14 @@ class StreamController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error starting stream: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return back()->withErrors(['error' => 'Error starting stream']);
         }
     }
@@ -179,23 +179,23 @@ class StreamController extends Controller
     /**
      * Stop the stream
      */
-    public function stop(Request $request)
+    public function DetenerRetransmision(Request $request)
     {
         Log::info('Stream stop request received', ['user_id' => Auth::id()]);
-        
+
         $user = Auth::user();
         $streamKey = $user->streamKey;
 
         if (!$streamKey) {
             Log::error('No stream key found for user during stop', ['user_id' => $user->id]);
-            
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No stream key found'
                 ], 400);
             }
-            
+
             return back()->withErrors(['error' => 'No stream key found']);
         }
 
@@ -215,7 +215,7 @@ class StreamController extends Controller
             ]);
 
             $data = $response->json();
-            
+
             Log::info('Stream stop API response', [
                 'status_code' => $response->status(),
                 'response_data' => $data
@@ -228,18 +228,18 @@ class StreamController extends Controller
                         'message' => $data['message']
                     ]);
                 }
-                
+
                 return back()->with('success', $data['message']);
             } else {
                 Log::warning('Stream stop failed', ['response' => $data]);
-                
+
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
                         'message' => $data['message'] ?? 'Failed to stop stream'
                     ]);
                 }
-                
+
                 return back()->withErrors(['error' => $data['message'] ?? 'Failed to stop stream']);
             }
 
@@ -249,14 +249,14 @@ class StreamController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error stopping stream: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return back()->withErrors(['error' => 'Error stopping stream']);
         }
     }
@@ -264,7 +264,7 @@ class StreamController extends Controller
     /**
      * Stop stream silently (used internally when videos/keys change)
      */
-    public static function stopStreamSilently($user)
+    public static function detenerStreamSecond($user)
     {
         $streamKey = $user->streamKey;
 
@@ -283,7 +283,7 @@ class StreamController extends Controller
             ]);
 
             $data = $response->json();
-            
+
             Log::info('Stream stopped silently due to content change', [
                 'user_id' => $user->id,
                 'response' => $data

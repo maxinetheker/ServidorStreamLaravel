@@ -1726,7 +1726,6 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
 
         const localVideo = localVideoRef.current;
         if (localVideo && !showingRtmp) {
-            //  MEJORADO: Verificar si el video está pausado antes de intentar reproducir
             if (localVideo.paused) {
                 console.log(' Video local cargado y pausado, iniciando reproducción');
                 localVideo.play().catch(error => {

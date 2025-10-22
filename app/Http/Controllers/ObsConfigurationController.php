@@ -13,7 +13,7 @@ class ObsConfigurationController extends Controller
     /**
      * Store or update OBS configuration
      */
-    public function store(Request $request): RedirectResponse
+    public function GuardarConfiguracion(Request $request): RedirectResponse
     {
         $request->validate([
             'host' => 'required|string|max:255',
@@ -51,7 +51,7 @@ class ObsConfigurationController extends Controller
     /**
      * Get OBS configuration
      */
-    public function show(): JsonResponse
+    public function MostrarOBSConfiguracion(): JsonResponse
     {
         $user = Auth::user();
         $obsConfig = $user->obsConfiguration;
@@ -77,7 +77,7 @@ class ObsConfigurationController extends Controller
     /**
      * Delete OBS configuration
      */
-    public function destroy(): RedirectResponse
+    public function EliminarObsConfiguracion(): RedirectResponse
     {
         $user = Auth::user();
         $obsConfig = $user->obsConfiguration;

@@ -138,7 +138,7 @@ export default function Welcome() {
                         </aside>
                     </div>
                 </main>
-                <footer className="px-6 pb-6 text-center text-[11px] text-slate-500 md:px-10">Construido con Laravel + Inertia. Inspirado en flujos modernos de streaming.</footer>
+                <footer className="px-6 pb-6 text-center text-[11px] text-slate-500 md:px-10">Construido por Kervi Falcón.</footer>
             </div>
         </>
     );

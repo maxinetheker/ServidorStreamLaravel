@@ -29,7 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('control', function () {
         $user = Auth::user();
         $streamKey = $user->streamKey;
-        
+
         $streamStatus = [
             'isStreaming' => false,
             'exists' => false,
@@ -54,26 +54,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 // Keep default values on error
             }
         }
-        
+
         return Inertia::render('control', [
             'streamStatus' => $streamStatus
         ]);
     })->name('control');
     Route::get('fallback', function () {
         $userId = Auth::id();
-        
+
         // Limpiar archivos huérfanos antes de mostrar la página
         VideoController::cleanOrphanedVideos($userId);
-        
+
         $videos = Video::where('id_usuario', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return Inertia::render('fallback', [
             'videos' => $videos
         ]);
     })->name('fallback');
-    
+
     // Rutas API para videos
     Route::get('/api/videos', [VideoController::class, 'index'])->name('api.videos.index');
     Route::post('/api/videos', [VideoController::class, 'store'])->name('api.videos.store');
@@ -85,14 +85,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/stream-key/regenerate', [StreamKeyController::class, 'regenerate'])->name('api.stream-key.regenerate');
 
     // Rutas API para control de stream
-    Route::get('/api/stream/status', [StreamController::class, 'getStatus'])->name('api.stream.status');
-    Route::post('/api/stream/start', [StreamController::class, 'start'])->name('api.stream.start');
-    Route::post('/api/stream/stop', [StreamController::class, 'stop'])->name('api.stream.stop');
+    Route::get('/api/stream/status', [StreamController::class, 'ObtenerStatus'])->name('api.stream.status');
+    Route::post('/api/stream/start', [StreamController::class, 'IniciarRetransmision'])->name('api.stream.start');
+    Route::post('/api/stream/stop', [StreamController::class, 'DetenerRetransmision'])->name('api.stream.stop');
 
     // Rutas para OBS Configuration
-    Route::get('/api/obs-config', [ObsConfigurationController::class, 'show'])->name('api.obs-config.show');
-    Route::post('/api/obs-config', [ObsConfigurationController::class, 'store'])->name('api.obs-config.store');
-    Route::delete('/api/obs-config', [ObsConfigurationController::class, 'destroy'])->name('api.obs-config.destroy');
+    Route::get('/api/obs-config', [ObsConfigurationController::class, 'MostrarOBSConfiguracion'])->name('api.obs-config.show');
+    Route::post('/api/obs-config', [ObsConfigurationController::class, 'GuardarConfiguracion'])->name('api.obs-config.store');
+    Route::delete('/api/obs-config', [ObsConfigurationController::class, 'EliminarObsConfiguracion'])->name('api.obs-config.destroy');
     Route::patch('/api/obs-config/toggle', [ObsConfigurationController::class, 'toggle'])->name('api.obs-config.toggle');
 
     // Rutas para Streaming Tool y OBS Control
@@ -109,7 +109,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $user = Auth::user();
         $streamKey = $user->streamKey;
         $obsConfig = $user->obsConfiguration;
-        
+
         return Inertia::render('configuracion', [
             'streamKey' => $streamKey ? [
                 'stream_key' => $streamKey->stream_key,

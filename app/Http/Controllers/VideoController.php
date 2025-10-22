@@ -72,7 +72,7 @@ class VideoController extends Controller
 
             try {
                 $this->convertToMp4($fullTempPath, $fullFinalPath);
-                
+
                 if (file_exists($fullTempPath)) {
                     unlink($fullTempPath);
                 }
@@ -85,7 +85,7 @@ class VideoController extends Controller
                     'tamaño' => filesize($fullFinalPath)
                 ]);
 
-                StreamController::stopStreamSilently(Auth::user());
+                StreamController::detenerStreamSecond(Auth::user());
 
                 $videos = Video::where('id_usuario', $userId)
                     ->orderBy('created_at', 'desc')
@@ -104,7 +104,7 @@ class VideoController extends Controller
                 if (file_exists($fullFinalPath)) {
                     unlink($fullFinalPath);
                 }
-                
+
                 Log::error('Error procesando video: ' . $e->getMessage());
                 return back()->withErrors(['video' => 'Error procesando el video: ' . $e->getMessage()]);
             }
@@ -165,7 +165,7 @@ class VideoController extends Controller
 
             $video->delete();
 
-            StreamController::stopStreamSilently(Auth::user());
+            StreamController::detenerStreamSecond(Auth::user());
 
             return back()->with('success', 'Video eliminado correctamente');
         } catch (\Exception $e) {
@@ -179,24 +179,24 @@ class VideoController extends Controller
     {
         try {
             $userVideoDir = "{$userId}/videos_de_corte";
-            
+
             if (!Storage::disk('public')->exists($userVideoDir)) {
                 return;
             }
 
             $physicalFiles = Storage::disk('public')->files($userVideoDir);
-            
+
             $dbVideoPaths = Video::where('id_usuario', $userId)
                 ->pluck('ruta')
                 ->toArray();
 
             $orphanedFiles = array_diff($physicalFiles, $dbVideoPaths);
-            
+
             $deletedCount = 0;
             foreach ($orphanedFiles as $orphanedFile) {
                 $extension = strtolower(pathinfo($orphanedFile, PATHINFO_EXTENSION));
                 $videoExtensions = ['mp4', 'avi', 'mov', 'mkv', 'wmv', 'flv', 'webm'];
-                
+
                 if (in_array($extension, $videoExtensions)) {
                     if (Storage::disk('public')->delete($orphanedFile)) {
                         $deletedCount++;
