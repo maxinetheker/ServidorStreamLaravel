@@ -14,9 +14,7 @@ use App\Models\Video;
 
 class StreamingToolController extends Controller
 {
-    /**
-     * Display the streaming tool page
-     */
+    
     public function index(Request $request) 
     {
         $user = Auth::user();
@@ -61,7 +59,7 @@ class StreamingToolController extends Controller
     }
 
     /**
-     * Get OBS clients status for API calls
+     * Obtener estado de OBS vía API
      */
     public function getObsStatusApi()
     {
@@ -99,7 +97,7 @@ class StreamingToolController extends Controller
     }
 
     /**
-     * Get OBS clients status
+     * Obtener estado de OBS vía interfaz web
      */
     public function getObsStatus()
     {
@@ -140,7 +138,7 @@ class StreamingToolController extends Controller
     }
 
     /**
-     * Connect OBS clients
+     * Conectar OBS
      */
     public function connectObs()
     {
@@ -188,7 +186,7 @@ class StreamingToolController extends Controller
     }
 
     /**
-     * Start OBS stream
+     * Iniciar stream en OBS
      */
     public function startObsStream()
     {
@@ -228,7 +226,7 @@ class StreamingToolController extends Controller
     }
 
     /**
-     * Stop OBS stream
+     * Detener stream en OBS
      */
     public function stopObsStream()
     {
@@ -268,7 +266,7 @@ class StreamingToolController extends Controller
     }
 
     /**
-     * Change OBS scene
+     * Cambiar escena en OBS
      */
     public function changeObsScene(Request $request)
     {
@@ -318,7 +316,7 @@ class StreamingToolController extends Controller
     }
 
     /**
-     * Execute custom OBS command
+     * Ejecutar comando genérico en OBS
      */
     public function executeObsCommand(Request $request): JsonResponse
     {

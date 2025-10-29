@@ -13,13 +13,12 @@ use Carbon\Carbon;
 class AdminUserController extends Controller
 {
     /**
-     * Helper to return errors compatible with Inertia when needed.
+     * Helper para retornar errores compatibles con Inertia cuando sea necesario.
      */
     protected function errorResponse(Request $request, string $message, string $field = 'vencimiento', int $status = 422)
     {
         if ($request->header('X-Inertia')) {
-            // For Inertia requests return a redirect back with errors so the Inertia client
-            // receives a location response and can display validation errors properly.
+ 
             return redirect()->back()->withErrors([$field => $message])->withInput();
         }
 
@@ -29,7 +28,7 @@ class AdminUserController extends Controller
     public function index(Request $request)
     {
         $users = User::with('licencia')->orderBy('id', 'desc')->get();
-        // If this is an Inertia request, return the admin users page via Inertia
+        // Si es una petición Inertia, renderizar la vista correspondiente
         if ($request->header('X-Inertia')) {
             return Inertia::render('admin/users', [
                 'users' => $users,
@@ -86,7 +85,7 @@ class AdminUserController extends Controller
     }
 
     /**
-     * Toggle license active/inactive for a user (independent per license).
+     * Cambiar estado de la licencia (activa/inactiva) para un usuario (independiente por licencia).
      */
     public function toggleLicense(Request $request, $id)
     {
@@ -95,23 +94,22 @@ class AdminUserController extends Controller
             return response()->json(['message' => 'Usuario no encontrado'], 404);
         }
 
-        // allow passing a vencimiento when activating
         $vencimiento = $request->input('vencimiento');
 
         $lic = Licencia::where('user_id', $user->id)->first();
 
         if (!$lic) {
-            // If creating and no vencimiento provided, reject
+          
             if (!$vencimiento) {
                 return $this->errorResponse($request, 'Se requiere fecha de vencimiento al activar la licencia');
             }
 
-            // validate date format
+            // validar formato de vencimiento
             if ($vencimiento && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $vencimiento)) {
                 return $this->errorResponse($request, 'Formato de fecha inválido. Use YYYY-MM-DD');
             }
 
-            // ensure vencimiento is not in the past
+            // asegurar que la fecha de vencimiento no esté en el pasado
             if ($vencimiento) {
                 $vDate = Carbon::parse($vencimiento);
                 if ($vDate->lt(Carbon::today())) {
@@ -126,16 +124,16 @@ class AdminUserController extends Controller
                 'vencimiento' => $vencimiento,
             ]);
         } else {
-            // toggle active state
+            // cambio de estado activo/inactivo
             $lic->active = !$lic->active;
 
-            // if activating, require vencimiento (either existing or passed)
+            // si se activa, se requiere vencimiento (ya sea existente o pasado)
             if ($lic->active) {
                 $v = $vencimiento ?? $lic->vencimiento;
                 if (!$v) {
                     return $this->errorResponse($request, 'Se requiere fecha de vencimiento al activar la licencia');
                 }
-                // validate and ensure not expired
+                // validar formato de vencimiento
                 if ($vencimiento && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $vencimiento)) {
                     return $this->errorResponse($request, 'Formato de fecha inválido. Use YYYY-MM-DD');
                 }
@@ -145,7 +143,7 @@ class AdminUserController extends Controller
                 }
                 $lic->vencimiento = $vencimiento ?? $lic->vencimiento;
             } else {
-                // when deactivating license, clear features
+                // cuando se desactiva, desactivar todas las características
                 $lic->retransmision = false;
                 $lic->controlremoto = false;
                 $lic->videosfallback = false;
@@ -164,8 +162,7 @@ class AdminUserController extends Controller
     }
 
     /**
-     * Update specific license feature and expiration.
-     * Accepts: feature (string), active (bool), vencimiento (nullable date), tipo (optional)
+     * actualizar los detalles de la licencia de un usuario.
      */
     public function updateLicense(Request $request, $id)
     {
@@ -188,14 +185,12 @@ class AdminUserController extends Controller
             ]);
         }
 
-        // Update feature
+        // actualizar característica específica
         if ($feature && in_array($feature, ['retransmision', 'controlremoto', 'videosfallback'])) {
-            // Features can only be toggled if the overall license is active
             if (!$lic->active) {
                 return $this->errorResponse($request, 'No se pueden activar características porque la licencia está inactiva', 'feature');
             }
 
-            // Prevent activating features if vencimiento is expired
             if ($lic->vencimiento && Carbon::parse($lic->vencimiento)->lt(Carbon::today()) && (bool)$active) {
                 return $this->errorResponse($request, 'La licencia está vencida y no se pueden activar características', 'feature');
             }
@@ -203,12 +198,10 @@ class AdminUserController extends Controller
             $lic->{$feature} = (bool) $active;
         }
 
-        // Update tipo if provided
         if ($tipo) {
             $lic->tipo = $tipo;
         }
 
-        // Update vencimiento if provided (allow null). Validate format if non-null
         if ($vencimiento !== null) {
             if ($vencimiento && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $vencimiento)) {
                 return $this->errorResponse($request, 'Formato de fecha inválido. Use YYYY-MM-DD');
@@ -216,7 +209,6 @@ class AdminUserController extends Controller
             $lic->vencimiento = $vencimiento ? $vencimiento : null;
         }
 
-        // If any feature active or tipo set then mark licencia active
         $lic->active = (bool) $lic->retransmision || (bool) $lic->controlremoto || (bool) $lic->videosfallback || ($lic->tipo !== 'free');
 
         $lic->save();

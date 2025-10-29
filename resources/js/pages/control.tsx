@@ -35,12 +35,10 @@ export default function Control({ streamStatus }: ControlProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const { data, setData, post, processing, reset } = useForm({
-        action: 'toggle' // 'start' or 'stop'
+        action: 'toggle' // iniciar o detener
     });
-
-    // Check stream status on component mount
+// verificar el estado del stream al cargar el componente
     useEffect(() => {
-        // Always check status when component mounts to ensure fresh data
         if (streamStatus.hasStreamKey) {
             checkStreamStatus();
         } else {
@@ -48,7 +46,6 @@ export default function Control({ streamStatus }: ControlProps) {
         }
     }, []);
 
-    // Also check when streamStatus prop changes (for prefetch scenarios)
     useEffect(() => {
         setIsStreaming(streamStatus.isStreaming);
     }, [streamStatus.isStreaming]);
@@ -84,7 +81,7 @@ export default function Control({ streamStatus }: ControlProps) {
         const endpoint = checked ? '/api/stream/start' : '/api/stream/stop';
         const action = checked ? 'iniciar' : 'detener';
         
-        // Optimistically update the UI
+        // Optimizar la actualización inmediata del estado
         setIsStreaming(checked);
         
         post(endpoint, {

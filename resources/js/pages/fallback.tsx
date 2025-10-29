@@ -29,7 +29,7 @@ const LoadingModal = ({ isOpen, message }: { isOpen: boolean; message: string })
     );
 };
 
-// SweetAlert2 toast utility
+
 const toast = {
     success: (message: string) => {
         Swal.fire({
@@ -110,7 +110,6 @@ export default function Fallback({ videos: initialVideos, serverLimits, flash, e
 
     // Efecto para controlar la reproducción de videos
     useEffect(() => {
-        // Pausar todos los videos cuando playingVideoId cambie
         const allVideos = document.querySelectorAll('video[data-video-id]') as NodeListOf<HTMLVideoElement>;
         allVideos.forEach(video => {
             const videoId = parseInt(video.getAttribute('data-video-id') || '0');
@@ -153,10 +152,9 @@ export default function Fallback({ videos: initialVideos, serverLimits, flash, e
             return;
         }
 
-        // Guardar inmediatamente en useForm (File es un Blob válido)
+        // Guardar inmediatamente en useForm
         setData('video', file);
         setPreviewFile(file);
-        // Crear URL de previsualización
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);
         setUploadProgress(0);

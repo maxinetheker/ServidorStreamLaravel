@@ -45,7 +45,6 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     // HLS reference
     const rtmpHlsRef = useRef<Hls | null>(null);
     
-    // NUEVO: Control de inicialización HLS para evitar parpadeo
     const hlsInitializingRef = useRef<boolean>(false);
     const hlsReadyRef = useRef<boolean>(false);
 
@@ -68,11 +67,11 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     const [isWaitingForStream, setIsWaitingForStream] = useState<boolean>(false);
     const [waitingMessage, setWaitingMessage] = useState<string>('Esperando stream...');
 
-    // NUEVO: Estados para monitoreo RTMP
+    // Estados para monitoreo RTMP
     const [rtmpStatusMonitor, setRtmpStatusMonitor] = useState<string>('UNKNOWN');
     const [lastRtmpCheck, setLastRtmpCheck] = useState<Date | null>(null);
     
-    // NUEVO: Refs para control de monitoreo
+    // Refs para control de monitoreo
     const rtmpStatusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const isMonitoringRtmpRef = useRef<boolean>(false);
 
@@ -83,7 +82,7 @@ const Live: React.FC<LiveProps> = ({ streamKey }) => {
     const lastStallRecoveryRef = useRef<number>(0);
     const lastBufferLogRef = useRef<number>(0);
 
-    // NUEVO: Función para consultar estado RTMP
+    // Función para consultar estado RTMP
     const checkRtmpStatus = async () => {
         try {
             const response = await fetch(`${SOCKET_URL}/api/stream/rtmp-status/${STREAM_KEY}`, {
