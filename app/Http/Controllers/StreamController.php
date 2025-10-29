@@ -29,7 +29,7 @@ class StreamController extends Controller
 
         try {
             $response = Http::withOptions([
-                'verify' => false, // Disable SSL verification for development
+                'verify' => false, 
                 'timeout' => 30
             ])->get(env('STREAMING_API_URL') . '/api/stream/status/' . $user->id);
 
@@ -50,9 +50,6 @@ class StreamController extends Controller
         }
     }
 
-    /**
-     * Start the stream
-     */
     public function IniciarRetransmision(Request $request)
     {
         Log::info('Stream start request received', ['user_id' => Auth::id()]);
@@ -73,13 +70,11 @@ class StreamController extends Controller
             return back()->withErrors(['error' => 'No stream key found']);
         }
 
-        // Get user's videos - convert to full file system paths
+    
         $videos = Video::where('id_usuario', $user->id)
             ->get()
             ->map(function ($video) {
-                // Convert from storage path to full storage path
-                // From: "1/videos_de_corte/filename.mp4"
-                // To: "storage/1/videos_de_corte/filename.mp4"
+
                 return "storage/" . $video->ruta;
             })
             ->toArray();
@@ -92,7 +87,7 @@ class StreamController extends Controller
         ]);
 
         try {
-            // First notify the Node.js server to prepare the stream
+            
             $response = Http::withOptions([
                 'verify' => false,
                 'timeout' => 30
@@ -117,7 +112,7 @@ class StreamController extends Controller
                 return back()->withErrors(['error' => $prepareData['message'] ?? 'Failed to prepare stream']);
             }
 
-            // Now start the actual stream
+           
             $response = Http::withOptions([
                 'verify' => false,
                 'timeout' => 30
@@ -176,9 +171,7 @@ class StreamController extends Controller
         }
     }
 
-    /**
-     * Stop the stream
-     */
+  
     public function DetenerRetransmision(Request $request)
     {
         Log::info('Stream stop request received', ['user_id' => Auth::id()]);
@@ -261,9 +254,7 @@ class StreamController extends Controller
         }
     }
 
-    /**
-     * Stop stream silently (used internally when videos/keys change)
-     */
+
     public static function detenerStreamSecond($user)
     {
         $streamKey = $user->streamKey;

@@ -10,9 +10,7 @@ use App\Models\ObsConfiguration;
 
 class ObsConfigurationController extends Controller
 {
-    /**
-     * Store or update OBS configuration
-     */
+    
     public function GuardarConfiguracion(Request $request): RedirectResponse
     {
         $request->validate([
@@ -48,9 +46,7 @@ class ObsConfigurationController extends Controller
         }
     }
 
-    /**
-     * Get OBS configuration
-     */
+   
     public function MostrarOBSConfiguracion(): JsonResponse
     {
         $user = Auth::user();
@@ -74,9 +70,7 @@ class ObsConfigurationController extends Controller
         ]);
     }
 
-    /**
-     * Delete OBS configuration
-     */
+   
     public function EliminarObsConfiguracion(): RedirectResponse
     {
         $user = Auth::user();
@@ -95,9 +89,7 @@ class ObsConfigurationController extends Controller
         }
     }
 
-    /**
-     * Toggle OBS configuration active status
-     */
+  
     public function toggle(): JsonResponse
     {
         $user = Auth::user();
