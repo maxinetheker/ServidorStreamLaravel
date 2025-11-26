@@ -147,10 +147,10 @@ export default function StreamingTool() {
         }
 
         setIsLoadingStatus(true);
-        
+
         // Recargar la página para obtener datos frescos del backend
         router.reload({
-            only: ['clients'],
+            only: ['obsStatusData'],
             onFinish: () => {
                 setIsLoadingStatus(false);
                 if (showToast) toast.success('Estado OBS actualizado');
@@ -174,6 +174,7 @@ export default function StreamingTool() {
 
     // Función para conectar OBS usando useForm
     const connectObs = () => {
+        console.log('🔌 Iniciando conexión OBS...');
         if (!hasObsConfig) {
             toast.error('Necesitas configurar OBS WebSocket primero');
             return;
@@ -183,6 +184,7 @@ export default function StreamingTool() {
         post('/api/obs/connect', {
             preserveScroll: true,
             onFinish: () => {
+                console.log('🔌 Petición de conexión finalizada, actualizando datos...');
                 setIsConnecting(false);
                 // Actualizar estado después de conectar
                 setTimeout(() => refreshObsData(), 2000);
@@ -190,13 +192,13 @@ export default function StreamingTool() {
         });
     };
 
-   
+
     // Función para iniciar stream usando useForm
     const startObsStream = () => {
         post('/streaming-tool/start-obs-stream', {
             preserveScroll: true,
             onSuccess: () => {
-                
+
                 // Múltiples actualizaciones para asegurar que se vea el cambio
                 setTimeout(() => router.reload({ only: ['obsStatusData'] }), 1000);
                 setTimeout(() => router.reload({ only: ['obsStatusData'] }), 3000);
@@ -218,9 +220,9 @@ export default function StreamingTool() {
             onSuccess: () => {
                 toast.success('Stream detenido exitosamente');
                 // Múltiples actualizaciones para asegurar que se vea el cambio
-                setTimeout(() => router.reload({ only: ['clients'] }), 1000);
-                setTimeout(() => router.reload({ only: ['clients'] }), 3000);
-                setTimeout(() => router.reload({ only: ['clients'] }), 5000);
+                setTimeout(() => router.reload({ only: ['obsStatusData'] }), 1000);
+                setTimeout(() => router.reload({ only: ['obsStatusData'] }), 3000);
+                setTimeout(() => router.reload({ only: ['obsStatusData'] }), 5000);
             },
             onError: (errors) => {
                 console.error('Error al detener stream:', errors);
@@ -247,7 +249,7 @@ export default function StreamingTool() {
             onSuccess: () => {
                 toast.success('Escena cambiada exitosamente');
                 // Actualizar estado inmediatamente después de cambiar escena
-                router.reload({ only: ['clients'] });
+                router.reload({ only: ['obsStatusData'] });
             },
             onError: (errors) => {
                 console.error('Error al cambiar escena:', errors);
@@ -262,8 +264,8 @@ export default function StreamingTool() {
         if (hasStreamKey && hasObsConfig) {
             const interval = setInterval(() => {
                 // Usar router.reload silenciosamente para actualizar solo los datos de clients
-                router.reload({ 
-                    only: ['clients']
+                router.reload({
+                    only: ['obsStatusData']
                 });
             }, 5000); // Cada 5 segundos
 
@@ -276,7 +278,7 @@ export default function StreamingTool() {
             <Head title="Streaming Tool" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-1 max-w-6xl">
-                    
+
                     {/* Estado del Sistema */}
                     <Card>
                         <CardHeader>
@@ -368,7 +370,7 @@ export default function StreamingTool() {
                                         </a>
                                     </Button>
                                 )}
-                                
+
                                 {!hasObsConfig && (
                                     <Button asChild variant="outline">
                                         <a href="/configuracion">
@@ -465,20 +467,20 @@ export default function StreamingTool() {
                                                                     </>
                                                                 )}
                                                             </Badge>
-                                                            
+
                                                             {client.isStreaming && (
                                                                 <Badge variant="destructive">
                                                                     <Eye className="mr-1 h-3 w-3" />
                                                                     En Vivo
                                                                 </Badge>
                                                             )}
-                                                            
+
                                                             {client.isRecording && (
                                                                 <Badge variant="secondary">
                                                                     Grabando
                                                                 </Badge>
                                                             )}
-                                                            
+
                                                             {/* Badge adicional para estado de output si es diferente */}
                                                             {!client.isStreaming && client.stream?.outputActive && (
                                                                 <Badge variant="outline" className="text-yellow-600">
@@ -487,14 +489,14 @@ export default function StreamingTool() {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    
+
                                                     {client.streamKey && (
                                                         <CardDescription>
                                                             Stream Key: {client.streamKey.substring(0, 16)}...
                                                         </CardDescription>
                                                     )}
                                                 </CardHeader>
-                                                
+
                                                 <CardContent className="space-y-4">
                                                     {/* Información del cliente */}
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -515,8 +517,8 @@ export default function StreamingTool() {
                                                         <div>
                                                             <div className="font-medium">Última Actualización</div>
                                                             <div className="text-muted-foreground">
-                                                                {client.lastSeen ? new Date(client.lastSeen).toLocaleTimeString() : 
-                                                                 client.timestamp ? new Date(client.timestamp).toLocaleTimeString() : 'N/A'}
+                                                                {client.lastSeen ? new Date(client.lastSeen).toLocaleTimeString() :
+                                                                    client.timestamp ? new Date(client.timestamp).toLocaleTimeString() : 'N/A'}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -533,7 +535,7 @@ export default function StreamingTool() {
                                                             <Play className="mr-2 h-4 w-4" />
                                                             {processing ? 'Iniciando...' : 'Iniciar Stream'}
                                                         </Button>
-                                                        
+
                                                         <Button
                                                             onClick={stopObsStream}
                                                             disabled={!client.isStreaming || processing}
@@ -553,15 +555,15 @@ export default function StreamingTool() {
                                                                 <Select
                                                                     value={selectedScene}
                                                                     onValueChange={setSelectedScene}
-                                                                    
+
                                                                 >
                                                                     <SelectTrigger className="flex-1">
                                                                         <SelectValue placeholder="Seleccionar escena" />
                                                                     </SelectTrigger>
                                                                     <SelectContent>
                                                                         {client.scenes.map((scene) => (
-                                                                            <SelectItem 
-                                                                                key={scene.sceneName} 
+                                                                            <SelectItem
+                                                                                key={scene.sceneName}
                                                                                 value={scene.sceneName}
                                                                             >
                                                                                 {scene.sceneName}
